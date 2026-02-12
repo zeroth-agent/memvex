@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "lint": "turbo run lint"
   },
+  "packageManager": "pnpm@10.29.3",
   "devDependencies": {
     "@types/node": "^25.2.3",
     "turbo": "^1.10.0",
