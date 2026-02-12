@@ -530,7 +530,7 @@ function NavBar({ theme, toggleTheme }: { theme: 'dark' | 'light', toggleTheme: 
 }
 
 export default function Landing() {
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -597,7 +597,7 @@ export default function Landing() {
 
         .light {
           /* Light Mode Overrides */
-          --bg-main: #ffffff;
+          --bg-main: #faf9f6;
           --bg-card: #ffffff;
           --bg-card-hover: #ffffff;
           --bg-term-header: #f8fafc;
