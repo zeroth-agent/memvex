@@ -1,0 +1,29 @@
+identity:
+  name: "Your Name"
+  role: "Founder building [your startup]"
+  communication:
+    team: casual, direct
+    external: professional, concise
+  coding:
+    language: typescript
+    style: functional
+    testing: vitest
+  scheduling:
+    no_meetings_before: "10:00"
+    focus_blocks: ["Tue 9-12", "Thu 9-12"]
+
+memory:
+  enabled: true
+  storage: sqlite
+
+guard:
+  enabled: true
+  rules:
+    - action: "spend_money"
+      max: 50
+      require_approval_above: 50
+    - action: "send_external_email"
+      require_approval: true
+    - action: "modify_production"
+      blocked: true
+      message: "Use staging first"

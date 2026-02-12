@@ -1,0 +1,43 @@
+# Example: Solo Developer
+
+# A solo developer building a SaaS product.
+# This config shows identity, memory, and guard all working together.
+
+identity:
+  name: "Alex Chen"
+  role: "Solo founder building a B2B SaaS"
+  communication:
+    team: casual              # No team, but agents should be relaxed
+    external: professional    # Client-facing comms are polished
+  coding:
+    language: typescript
+    style: functional
+    framework: nextjs
+    testing: vitest
+    conventions:
+      - "Prefer const over let"
+      - "Use early returns"
+      - "No classes unless unavoidable"
+  scheduling:
+    timezone: "America/Los_Angeles"
+    no_meetings_before: "10:00"
+    focus_blocks: ["Mon 9-12", "Wed 9-12", "Fri 9-12"]
+
+memory:
+  enabled: true
+  storage: sqlite
+
+guard:
+  enabled: true
+  rules:
+    - action: "spend_money"
+      max: 100
+      require_approval_above: 100
+    - action: "send_external_email"
+      require_approval: true
+    - action: "deploy_production"
+      require_approval: true
+      message: "Always review changes before deploying"
+    - action: "delete_data"
+      blocked: true
+      message: "Data deletion requires manual confirmation"

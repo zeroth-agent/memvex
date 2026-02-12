@@ -1,0 +1,21 @@
+{
+    "name": "cortex-cli",
+    "version": "0.1.0",
+    "bin": {
+        "cortex": "./dist/index.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc -w"
+    },
+    "dependencies": {
+        "@cortex/core": "workspace:*",
+        "@cortex/mcp-server": "workspace:*",
+        "commander": "^11.1.0",
+        "inquirer": "^9.2.11"
+    },
+    "devDependencies": {
+        "@types/inquirer": "^9.0.7",
+        "typescript": "^5.3.0"
+    }
+}

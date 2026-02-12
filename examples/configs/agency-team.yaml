@@ -1,0 +1,4 @@
+# Example config for an agency team
+identity:
+  name: "Agency Lead"
+  role: "Director"

@@ -1,0 +1,4 @@
+# Example config for a startup founder
+identity:
+  name: "Founder"
+  role: "CEO"
