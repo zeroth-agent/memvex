@@ -29,8 +29,18 @@ This document tracks the progress of building Memvex (formerly Cortex), the pers
     - [x] `memvex init` command
     - [x] `memvex serve` command
     - [x] Connect Claude/Cursor to local server
+- [x] Connect Claude/Cursor to local server
 
-## Phase 2: Memory Module (Week 2)
+## Phase 1.5: Public Website (Week 1)
+- [ ] **Data & Vision Site**
+    - [x] Scaffold `packages/docs` (Astro Starlight)
+    - [ ] Migrate `docs/*.md` content
+    - [x] **Landing Page Migration**
+        - [x] Port `cortex-landing.jsx` to `packages/docs/src/components/Landing.tsx`
+        - [x] Rename "Cortex" -> "Memvex" in UI
+        - [x] Integrate into `index.mdx` using Astro
+
+
 - [ ] **Memory Package**
     - [ ] Create `packages/memory`
     - [ ] SQLite storage adapter (`better-sqlite3`)
