@@ -19,15 +19,15 @@ function TerminalDemo() {
     return (
         <div
             style={{
-                background: "#0a0c10",
-                border: "1px solid #1a1d25",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "14px",
                 overflow: "hidden",
                 fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                 fontSize: "13px",
                 maxWidth: "620px",
                 margin: "0 auto",
-                boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)",
+                boxShadow: "0 24px 80px var(--shadow-color), 0 0 0 1px var(--border-light)",
             }}
         >
             <div
@@ -36,14 +36,14 @@ function TerminalDemo() {
                     alignItems: "center",
                     gap: "7px",
                     padding: "13px 18px",
-                    borderBottom: "1px solid #1a1d25",
-                    background: "#0d0f14",
+                    borderBottom: "1px solid var(--border)",
+                    background: "var(--bg-term-header)",
                 }}
             >
                 <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#ff5f57" }} />
                 <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#febc2e" }} />
                 <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#28c840" }} />
-                <span style={{ marginLeft: "12px", color: "#3d4250", fontSize: "12px" }}>
+                <span style={{ marginLeft: "12px", color: "var(--text-muted-2)", fontSize: "12px" }}>
                     memvex — live agent activity
                 </span>
             </div>
@@ -68,24 +68,24 @@ function TerminalDemo() {
                                     letterSpacing: "0.04em",
                                     background:
                                         line.agent === "cursor"
-                                            ? "#1a1530"
+                                            ? "var(--badge-bg-cursor)"
                                             : line.agent === "claude"
-                                                ? "#0f1f1c"
-                                                : "#1f1a10",
+                                                ? "var(--badge-bg-claude)"
+                                                : "var(--badge-bg-email)",
                                     color:
                                         line.agent === "cursor"
-                                            ? "#a78bfa"
+                                            ? "var(--accent-purple)"
                                             : line.agent === "claude"
-                                                ? "#4ecdc4"
-                                                : "#e8b44d",
+                                                ? "var(--accent-teal)"
+                                                : "var(--accent-yellow)",
                                 }}
                             >
                                 {line.agent}
                             </span>
-                            <span style={{ color: "#4a5068" }}>→</span>
-                            <span style={{ color: "#c0c7d6" }}>{line.action}</span>
+                            <span style={{ color: "var(--text-muted)" }}>→</span>
+                            <span style={{ color: "var(--text-code)" }}>{line.action}</span>
                         </div>
-                        <div style={{ paddingLeft: "4px", color: line.result.includes("⚠") ? "#e8b44d" : "#5a6a5a", fontSize: "12px" }}>
+                        <div style={{ paddingLeft: "4px", color: line.result.includes("⚠") ? "var(--accent-yellow)" : "var(--text-success)", fontSize: "12px" }}>
                             {line.result}
                         </div>
                     </div>
@@ -96,7 +96,7 @@ function TerminalDemo() {
                             display: "inline-block",
                             width: "8px",
                             height: "16px",
-                            background: "#4ecdc4",
+                            background: "var(--accent-teal)",
                             animation: "blink 1s infinite",
                             borderRadius: "1px",
                             verticalAlign: "middle",
@@ -126,9 +126,9 @@ function ModuleCard({ icon, name, tagline, description, commands, color, delay }
             onMouseLeave={() => setHovered(false)}
             style={{
                 background: hovered
-                    ? `linear-gradient(135deg, ${color}08 0%, #0d0f14 60%)`
-                    : "#0d0f14",
-                border: `1px solid ${hovered ? color + "30" : "#1a1d25"}`,
+                    ? `linear-gradient(135deg, ${color}15 0%, var(--bg-card-hover) 60%)`
+                    : "var(--bg-card)",
+                border: `1px solid ${hovered ? color + "40" : "var(--border)"}`,
                 borderRadius: "16px",
                 padding: "32px 28px",
                 transition: "all 0.35s ease",
@@ -137,6 +137,7 @@ function ModuleCard({ icon, name, tagline, description, commands, color, delay }
                 minWidth: "260px",
                 animation: "fadeSlideUp 0.6s ease both",
                 animationDelay: `${delay}s`,
+                boxShadow: hovered ? `0 10px 40px -10px ${color}20` : "none",
             }}
         >
             <div
@@ -149,14 +150,14 @@ function ModuleCard({ icon, name, tagline, description, commands, color, delay }
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: "14px",
-                    background: `${color}10`,
-                    border: `1px solid ${color}20`,
+                    background: `${color}15`,
+                    border: `1px solid ${color}25`,
                 }}
             >
                 {icon}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                <h3 style={{ fontSize: "20px", fontWeight: 700, margin: 0, color: "#e8eaed" }}>
+                <h3 style={{ fontSize: "20px", fontWeight: 700, margin: 0, color: "var(--text-main)" }}>
                     {name}
                 </h3>
             </div>
@@ -172,7 +173,7 @@ function ModuleCard({ icon, name, tagline, description, commands, color, delay }
             >
                 {tagline}
             </div>
-            <p style={{ color: "#6b7280", fontSize: "14px", lineHeight: "1.65", margin: "0 0 18px" }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "1.65", margin: "0 0 18px" }}>
                 {description}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -182,14 +183,14 @@ function ModuleCard({ icon, name, tagline, description, commands, color, delay }
                         style={{
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: "11.5px",
-                            color: "#4a5068",
-                            background: "#080a0e",
+                            color: "var(--text-muted)",
+                            background: "var(--bg-code-block)",
                             padding: "7px 12px",
                             borderRadius: "6px",
-                            border: "1px solid #12141a",
+                            border: "1px solid var(--border-code)",
                         }}
                     >
-                        <span style={{ color: color, opacity: 0.7 }}>$</span> {cmd}
+                        <span style={{ color: color, opacity: 0.8 }}>$</span> {cmd}
                     </div>
                 ))}
             </div>
@@ -230,30 +231,30 @@ guard:
     return (
         <div
             style={{
-                background: "#0a0c10",
-                border: "1px solid #1a1d25",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
                 borderRadius: "14px",
                 overflow: "hidden",
                 maxWidth: "540px",
                 margin: "0 auto",
-                boxShadow: "0 16px 60px rgba(0,0,0,0.4)",
+                boxShadow: "0 16px 60px var(--shadow-color)",
             }}
         >
             <div
                 style={{
                     padding: "12px 18px",
-                    borderBottom: "1px solid #1a1d25",
+                    borderBottom: "1px solid var(--border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    background: "#0d0f14",
+                    background: "var(--bg-term-header)",
                 }}
             >
                 <span
                     style={{
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: "12px",
-                        color: "#4a5068",
+                        color: "var(--text-muted)",
                     }}
                 >
                     memvex.yaml
@@ -261,8 +262,8 @@ guard:
                 <span
                     style={{
                         fontSize: "10px",
-                        color: "#4ecdc4",
-                        background: "#0f1f1c",
+                        color: "var(--accent-teal)",
+                        background: "var(--badge-bg-claude)",
                         padding: "3px 8px",
                         borderRadius: "4px",
                         fontFamily: "'JetBrains Mono', monospace",
@@ -279,7 +280,7 @@ guard:
                     fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                     fontSize: "12px",
                     lineHeight: "1.7",
-                    color: "#8a90a0",
+                    color: "var(--text-code-dim)",
                     overflowX: "auto",
                     whiteSpace: "pre",
                 }}
@@ -287,13 +288,12 @@ guard:
                 {yaml.split("\n").map((line, i) => {
                     const isKey = line.includes(":") && !line.trim().startsWith("-") && !line.trim().startsWith("#");
                     const isComment = line.trim().startsWith("#");
-
                     const isDash = line.trim().startsWith("-");
 
                     if (isComment) {
                         return (
                             <div key={i}>
-                                <span style={{ color: "#3a3f50" }}>{line}</span>
+                                <span style={{ color: "var(--text-comment)" }}>{line}</span>
                             </div>
                         );
                     }
@@ -301,9 +301,9 @@ guard:
                         const parts = line.split(":");
                         return (
                             <div key={i}>
-                                <span style={{ color: "#e8b44d" }}>{parts[0]}</span>
-                                {parts.length > 1 && <span style={{ color: "#4a5068" }}>:</span>}
-                                {parts.length > 1 && <span style={{ color: "#8a90a0" }}>{parts.slice(1).join(":")}</span>}
+                                <span style={{ color: "var(--accent-yellow)" }}>{parts[0]}</span>
+                                {parts.length > 1 && <span style={{ color: "var(--text-muted)" }}>:</span>}
+                                {parts.length > 1 && <span style={{ color: "var(--text-code-dim)" }}>{parts.slice(1).join(":")}</span>}
                             </div>
                         );
                     }
@@ -312,9 +312,9 @@ guard:
                         const value = rest.join(":");
                         return (
                             <div key={i}>
-                                <span style={{ color: "#4ecdc4" }}>{key}</span>
-                                <span style={{ color: "#4a5068" }}>:</span>
-                                <span style={{ color: value.includes('"') ? "#a78bfa" : "#c0c7d6" }}>{value}</span>
+                                <span style={{ color: "var(--accent-teal)" }}>{key}</span>
+                                <span style={{ color: "var(--text-muted)" }}>:</span>
+                                <span style={{ color: value.includes('"') ? "var(--accent-purple)" : "var(--text-code-val)" }}>{value}</span>
                             </div>
                         );
                     }
@@ -363,7 +363,7 @@ function HowItWorks() {
                         gap: "24px",
                         alignItems: "flex-start",
                         padding: "24px 0",
-                        borderBottom: i < steps.length - 1 ? "1px solid #12141a" : "none",
+                        borderBottom: i < steps.length - 1 ? "1px solid var(--border-dim)" : "none",
                     }}
                 >
                     <div
@@ -371,7 +371,7 @@ function HowItWorks() {
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: "32px",
                             fontWeight: 700,
-                            color: "#1a1d25",
+                            color: "var(--text-steps)",
                             lineHeight: 1,
                             minWidth: "50px",
                         }}
@@ -379,21 +379,21 @@ function HowItWorks() {
                         {step.num}
                     </div>
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: "0 0 6px", fontSize: "16px", fontWeight: 700, color: "#e8eaed" }}>
+                        <h4 style={{ margin: "0 0 6px", fontSize: "16px", fontWeight: 700, color: "var(--text-main)" }}>
                             {step.title}
                         </h4>
-                        <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#6b7280", lineHeight: "1.5" }}>
+                        <p style={{ margin: "0 0 12px", fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
                             {step.desc}
                         </p>
                         <div
                             style={{
                                 fontFamily: "'JetBrains Mono', monospace",
                                 fontSize: "12px",
-                                color: "#4ecdc4",
-                                background: "#080a0e",
+                                color: "var(--accent-teal)",
+                                background: "var(--bg-code-block)",
                                 padding: "10px 14px",
                                 borderRadius: "8px",
-                                border: "1px solid #12141a",
+                                border: "1px solid var(--border-code)",
                                 display: "inline-block",
                             }}
                         >
@@ -406,7 +406,49 @@ function HowItWorks() {
     );
 }
 
-function NavBar() {
+function ThemeToggle({ theme, toggleTheme }: { theme: 'dark' | 'light', toggleTheme: () => void }) {
+    return (
+        <button
+            onClick={toggleTheme}
+            style={{
+                background: "transparent",
+                border: "1px solid var(--border)",
+                borderRadius: "8px",
+                width: "32px",
+                height: "32px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "var(--text-muted)",
+                transition: "all 0.2s",
+            }}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+            {theme === 'dark' ? (
+                // Sun icon
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            ) : (
+                // Moon icon
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            )}
+        </button>
+    );
+}
+
+function NavBar({ theme, toggleTheme }: { theme: 'dark' | 'light', toggleTheme: () => void }) {
     return (
         <nav
             style={{
@@ -424,7 +466,7 @@ function NavBar() {
                         width: "28px",
                         height: "28px",
                         borderRadius: "8px",
-                        background: "linear-gradient(135deg, #4ecdc4 0%, #a78bfa 100%)",
+                        background: "linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-purple) 100%)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -435,44 +477,46 @@ function NavBar() {
                 >
                     M
                 </div>
-                <span style={{ fontSize: "16px", fontWeight: 700, color: "#e8eaed", letterSpacing: "-0.02em" }}>
+                <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-main)", letterSpacing: "-0.02em" }}>
                     memvex
                 </span>
                 <span
                     style={{
                         fontSize: "10px",
-                        color: "#4a5068",
-                        background: "#12141a",
+                        color: "var(--text-muted)",
+                        background: "var(--bg-card)",
                         padding: "2px 7px",
                         borderRadius: "4px",
                         fontFamily: "'JetBrains Mono', monospace",
+                        border: "1px solid var(--border-dim)",
                     }}
                 >
                     v0.1
                 </span>
             </div>
-            <div style={{ display: "flex", gap: "28px", alignItems: "center" }}>
-                {["Docs", "GitHub", "Examples"].map((link) => (
-                    <a
-                        key={link}
-                        href="#"
-                        style={{
-                            color: "#6b7280",
-                            textDecoration: "none",
-                            fontSize: "14px",
-                            fontWeight: 500,
-                            transition: "color 0.2s",
-                        }}
-                    >
-                        {link}
-                    </a>
-                ))}
+            <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+                {/* Updated Links: GitHub only for now */}
+                <a
+                    href="https://github.com/zeroth-agent/memvex"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        color: "var(--text-secondary)",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        transition: "color 0.2s",
+                    }}
+                >
+                    GitHub
+                </a>
+                <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
                 <div
                     style={{
                         padding: "8px 18px",
                         borderRadius: "8px",
-                        background: "#e8eaed",
-                        color: "#0a0c0f",
+                        background: "var(--button-bg)",
+                        color: "var(--button-text)",
                         fontSize: "13px",
                         fontWeight: 700,
                         cursor: "pointer",
@@ -486,14 +530,22 @@ function NavBar() {
 }
 
 export default function Landing() {
+    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
+
     return (
         <div
+            className={theme}
             style={{
                 fontFamily: "'Instrument Sans', -apple-system, sans-serif",
-                background: "#08090c",
-                color: "#e8eaed",
+                background: "var(--bg-main)",
+                color: "var(--text-main)",
                 minHeight: "100vh",
                 overflowX: "hidden",
+                transition: "background 0.3s ease, color 0.3s ease",
             }}
         >
             <link
@@ -501,30 +553,96 @@ export default function Landing() {
                 rel="stylesheet"
             />
             <style>{`
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+        :root {
+          /* Dark Mode (Default) */
+          --bg-main: #08090c;
+          --bg-card: #0d0f14;
+          --bg-card-hover: #0d0f14;
+          --bg-term-header: #0d0f14;
+          --bg-code-block: #080a0e;
+          
+          --border: #1a1d25;
+          --border-light: rgba(255,255,255,0.03);
+          --border-dim: #12141a;
+          --border-code: #12141a;
+          
+          --text-main: #e8eaed;
+          --text-secondary: #6b7280;
+          --text-muted: #4a5068;
+          --text-muted-2: #3d4250;
+          --text-dim: #8a90a0;
+          --text-code: #c0c7d6;
+          --text-code-dim: #8a90a0;
+          --text-code-val: #c0c7d6;
+          --text-comment: #3a3f50;
+          --text-steps: #1a1d25;
+          --text-success: #5a6a5a;
+          
+          --accent-teal: #4ecdc4;
+          --accent-purple: #a78bfa;
+          --accent-yellow: #e8b44d;
+          --accent-red: #ff5f57;
+          --accent-green: #28c840;
+          
+          --badge-bg-cursor: #1a1530;
+          --badge-bg-claude: #0f1f1c;
+          --badge-bg-email: #1f1a10;
+          
+          --button-bg: #e8eaed;
+          --button-text: #0a0c0f;
+          
+          --shadow-color: rgba(0,0,0,0.5);
+          --glow-color: rgba(78, 205, 196, 0.06);
         }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+
+        .light {
+          /* Light Mode Overrides */
+          --bg-main: #ffffff;
+          --bg-card: #ffffff;
+          --bg-card-hover: #ffffff;
+          --bg-term-header: #f8fafc;
+          --bg-code-block: #f1f5f9;
+          
+          --border: #e2e8f0;
+          --border-light: rgba(0,0,0,0.05);
+          --border-dim: #e2e8f0;
+          --border-code: #e2e8f0;
+          
+          --text-main: #0f172a;
+          --text-secondary: #475569;
+          --text-muted: #94a3b8;
+          --text-muted-2: #64748b;
+          --text-dim: #64748b;
+          --text-code: #334155;
+          --text-code-dim: #64748b;
+          --text-code-val: #334155;
+          --text-comment: #94a3b8;
+          --text-steps: #f1f5f9;
+          --text-success: #059669;
+          
+          --accent-teal: #0d9488;
+          --accent-purple: #7c3aed;
+          --accent-yellow: #d97706;
+          
+          --badge-bg-cursor: #f3e8ff;
+          --badge-bg-claude: #ccfbf1;
+          --badge-bg-email: #fef3c7;
+          
+          --button-bg: #0f172a;
+          --button-text: #ffffff;
+          
+          --shadow-color: rgba(0,0,0,0.1);
+          --glow-color: rgba(13, 148, 136, 0.1);
         }
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
+        
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
       `}</style>
 
-            <NavBar />
+            <NavBar theme={theme} toggleTheme={toggleTheme} />
 
             {/* Hero */}
             <section
@@ -545,7 +663,7 @@ export default function Landing() {
                         transform: "translateX(-50%)",
                         width: "600px",
                         height: "300px",
-                        background: "radial-gradient(ellipse, rgba(78, 205, 196, 0.06) 0%, transparent 70%)",
+                        background: "radial-gradient(ellipse, var(--glow-color) 0%, transparent 70%)",
                         pointerEvents: "none",
                     }}
                 />
@@ -557,11 +675,11 @@ export default function Landing() {
                         gap: "8px",
                         padding: "6px 14px 6px 8px",
                         borderRadius: "20px",
-                        border: "1px solid #1a1d25",
-                        background: "#0d0f14",
+                        border: "1px solid var(--border)",
+                        background: "var(--bg-card)",
                         marginBottom: "32px",
                         fontSize: "13px",
-                        color: "#6b7280",
+                        color: "var(--text-secondary)",
                     }}
                 >
                     <span
@@ -569,7 +687,7 @@ export default function Landing() {
                             width: "7px",
                             height: "7px",
                             borderRadius: "50%",
-                            background: "#4ecdc4",
+                            background: "var(--accent-teal)",
                             animation: "pulse 2s infinite",
                             display: "inline-block",
                         }}
@@ -591,7 +709,7 @@ export default function Landing() {
                     know you.{" "}
                     <span
                         style={{
-                            background: "linear-gradient(135deg, #4ecdc4, #a78bfa)",
+                            background: "linear-gradient(135deg, var(--accent-teal), var(--accent-purple))",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
                             backgroundSize: "200% 200%",
@@ -604,7 +722,7 @@ export default function Landing() {
                 <p
                     style={{
                         fontSize: "18px",
-                        color: "#6b7280",
+                        color: "var(--text-secondary)",
                         maxWidth: "520px",
                         margin: "0 auto 40px",
                         lineHeight: "1.6",
@@ -621,31 +739,31 @@ export default function Landing() {
                             display: "flex",
                             alignItems: "center",
                             gap: "10px",
-                            background: "#0d0f14",
-                            border: "1px solid #1a1d25",
+                            background: "var(--bg-card)",
+                            border: "1px solid var(--border)",
                             borderRadius: "10px",
                             padding: "12px 20px",
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: "14px",
-                            color: "#4ecdc4",
+                            color: "var(--accent-teal)",
                             cursor: "pointer",
                         }}
                     >
-                        <span style={{ color: "#4a5068" }}>$</span>
+                        <span style={{ color: "var(--text-muted)" }}>$</span>
                         npx memvex init
-                        <span style={{ color: "#4a5068", fontSize: "12px", marginLeft: "4px" }}>📋</span>
+                        <span style={{ color: "var(--text-muted)", fontSize: "12px", marginLeft: "4px" }}>📋</span>
                     </div>
                     <div
                         style={{
                             display: "flex",
                             alignItems: "center",
                             gap: "8px",
-                            background: "#e8eaed",
+                            background: "var(--button-bg)",
                             borderRadius: "10px",
                             padding: "12px 24px",
                             fontSize: "14px",
                             fontWeight: 700,
-                            color: "#0a0c0f",
+                            color: "var(--button-text)",
                             cursor: "pointer",
                         }}
                     >
@@ -672,7 +790,7 @@ export default function Landing() {
                     >
                         Three modules. One server.
                     </h2>
-                    <p style={{ color: "#6b7280", fontSize: "16px", maxWidth: "480px", margin: "0 auto" }}>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "16px", maxWidth: "480px", margin: "0 auto" }}>
                         Identity, memory, and guardrails — the three things every agent needs but none of them have.
                     </p>
                 </div>
@@ -687,7 +805,7 @@ export default function Landing() {
                             "memvex.identity.get('coding.style')",
                             "memvex.identity.get('communication.clients')",
                         ]}
-                        color="#4ecdc4"
+                        color="var(--accent-teal)"
                         delay={0.1}
                     />
                     <ModuleCard
@@ -699,7 +817,7 @@ export default function Landing() {
                             "memvex.memory.store('client:alex likes detail')",
                             "memvex.memory.recall('project atlas')",
                         ]}
-                        color="#a78bfa"
+                        color="var(--accent-purple)"
                         delay={0.2}
                     />
                     <ModuleCard
@@ -711,7 +829,7 @@ export default function Landing() {
                             "memvex.guard.check('spend', {amount: 75})",
                             "memvex.guard.check('send_external_email')",
                         ]}
-                        color="#e8b44d"
+                        color="var(--accent-yellow)"
                         delay={0.3}
                     />
                 </div>
@@ -730,7 +848,7 @@ export default function Landing() {
                     >
                         One config file. That's your whole setup.
                     </h2>
-                    <p style={{ color: "#6b7280", fontSize: "16px", maxWidth: "460px", margin: "0 auto" }}>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "16px", maxWidth: "460px", margin: "0 auto" }}>
                         Define who you are, what agents should remember, and what they're not allowed to do.
                     </p>
                 </div>
@@ -767,7 +885,7 @@ export default function Landing() {
                     >
                         Works with everything MCP-compatible
                     </h2>
-                    <p style={{ color: "#4a5068", fontSize: "14px" }}>And anything that can make an HTTP call.</p>
+                    <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>And anything that can make an HTTP call.</p>
                 </div>
                 <div
                     style={{
@@ -783,10 +901,10 @@ export default function Landing() {
                             style={{
                                 padding: "12px 22px",
                                 borderRadius: "10px",
-                                border: "1px solid #1a1d25",
-                                background: "#0d0f14",
+                                border: "1px solid var(--border)",
+                                background: "var(--bg-card)",
                                 fontSize: "14px",
-                                color: "#6b7280",
+                                color: "var(--text-secondary)",
                                 fontWeight: 500,
                             }}
                         >
@@ -828,7 +946,7 @@ export default function Landing() {
                     Give your agents
                     <br />a brain they share.
                 </h2>
-                <p style={{ color: "#6b7280", fontSize: "16px", marginBottom: "32px" }}>
+                <p style={{ color: "var(--text-secondary)", fontSize: "16px", marginBottom: "32px" }}>
                     Open source. Local-first. MCP-native. Always free.
                 </p>
                 <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
@@ -837,27 +955,27 @@ export default function Landing() {
                             display: "flex",
                             alignItems: "center",
                             gap: "10px",
-                            background: "#0d0f14",
-                            border: "1px solid #1a1d25",
+                            background: "var(--bg-card)",
+                            border: "1px solid var(--border)",
                             borderRadius: "10px",
                             padding: "14px 24px",
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: "14px",
-                            color: "#4ecdc4",
+                            color: "var(--accent-teal)",
                             cursor: "pointer",
                         }}
                     >
-                        <span style={{ color: "#4a5068" }}>$</span>
+                        <span style={{ color: "var(--text-muted)" }}>$</span>
                         npx memvex init
                     </div>
                     <div
                         style={{
                             padding: "14px 28px",
                             borderRadius: "10px",
-                            background: "linear-gradient(135deg, #4ecdc4, #a78bfa)",
+                            background: "linear-gradient(135deg, var(--accent-teal), var(--accent-purple))",
                             fontSize: "14px",
                             fontWeight: 700,
-                            color: "#0a0c0f",
+                            color: "var(--button-text)",
                             cursor: "pointer",
                         }}
                     >
@@ -869,7 +987,7 @@ export default function Landing() {
             {/* Footer */}
             <footer
                 style={{
-                    borderTop: "1px solid #12141a",
+                    borderTop: "1px solid var(--border-dim)",
                     padding: "28px 32px",
                     display: "flex",
                     justifyContent: "space-between",
@@ -880,21 +998,21 @@ export default function Landing() {
                     gap: "12px",
                 }}
             >
-                <div style={{ color: "#2a2e38", fontSize: "13px", fontFamily: "'JetBrains Mono', monospace" }}>
+                <div style={{ color: "var(--text-muted-2)", fontSize: "13px", fontFamily: "'JetBrains Mono', monospace" }}>
                     memvex · built by{" "}
-                    <span style={{ color: "#4a5068" }}>zeroth-agent</span> · hosted on{" "}
-                    <span style={{ color: "#4ecdc4" }}>zerothagent.com</span>
+                    <span style={{ color: "var(--text-muted)" }}>zeroth-agent</span> · hosted on{" "}
+                    <span style={{ color: "var(--accent-teal)" }}>zerothagent.com</span>
                 </div>
                 <div style={{ display: "flex", gap: "20px" }}>
-                    {["GitHub", "Twitter", "Discord"].map((link) => (
-                        <a
-                            key={link}
-                            href="#"
-                            style={{ color: "#3a3f49", textDecoration: "none", fontSize: "13px" }}
-                        >
-                            {link}
-                        </a>
-                    ))}
+                    {/* GitHub only */}
+                    <a
+                        href="https://github.com/zeroth-agent/memvex"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "var(--text-secondary)", textDecoration: "none", fontSize: "13px" }}
+                    >
+                        GitHub
+                    </a>
                 </div>
             </footer>
         </div>
