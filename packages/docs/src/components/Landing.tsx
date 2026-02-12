@@ -511,7 +511,10 @@ function NavBar({ theme, toggleTheme }: { theme: 'dark' | 'light', toggleTheme: 
                     GitHub
                 </a>
                 <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-                <div
+                <a
+                    href="https://github.com/zeroth-agent/memvex"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                         padding: "8px 18px",
                         borderRadius: "8px",
@@ -520,10 +523,11 @@ function NavBar({ theme, toggleTheme }: { theme: 'dark' | 'light', toggleTheme: 
                         fontSize: "13px",
                         fontWeight: 700,
                         cursor: "pointer",
+                        textDecoration: "none",
                     }}
                 >
                     Get Started
-                </div>
+                </a>
             </div>
         </nav>
     );
@@ -753,7 +757,10 @@ export default function Landing() {
                         npx memvex init
                         <span style={{ color: "var(--text-muted)", fontSize: "12px", marginLeft: "4px" }}>📋</span>
                     </div>
-                    <div
+                    <a
+                        href="https://github.com/zeroth-agent/memvex"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={{
                             display: "flex",
                             alignItems: "center",
@@ -765,10 +772,11 @@ export default function Landing() {
                             fontWeight: 700,
                             color: "var(--button-text)",
                             cursor: "pointer",
+                            textDecoration: "none",
                         }}
                     >
                         ★ Star on GitHub
-                    </div>
+                    </a>
                 </div>
             </section>
 
@@ -968,7 +976,10 @@ export default function Landing() {
                         <span style={{ color: "var(--text-muted)" }}>$</span>
                         npx memvex init
                     </div>
-                    <div
+                    <a
+                        href="https://github.com/zeroth-agent/memvex"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={{
                             padding: "14px 28px",
                             borderRadius: "10px",
@@ -977,10 +988,11 @@ export default function Landing() {
                             fontWeight: 700,
                             color: "var(--button-text)",
                             cursor: "pointer",
+                            textDecoration: "none",
                         }}
                     >
                         Read the Docs →
-                    </div>
+                    </a>
                 </div>
             </section>
 
