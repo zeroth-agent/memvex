@@ -20,12 +20,9 @@ async function main() {
 
             const __filename = fileURLToPath(import.meta.url);
             const __dirname = path.dirname(__filename);
+            // Import source file directly - tsx can handle .ts files
             const dashboardPath = path.resolve(__dirname, '../../dashboard/server/api.ts');
-
-            // Dynamic import of the dashboard factory
-            // On Windows, import() requires file:// URL for absolute paths
-            const dashboardUrl = pathToFileURL(dashboardPath).href;
-            const { createDashboardServer } = await import(dashboardUrl);
+            const { createDashboardServer } = await import(dashboardPath);
 
             const { app, port } = await createDashboardServer({
                 memory: server.getMemoryModule(),
