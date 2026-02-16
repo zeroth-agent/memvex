@@ -46,6 +46,11 @@ export class MemvexServer {
         logger.info("Memvex MCP Server started on stdio");
     }
 
+    public getIdentityModule() { return this.identityModule; }
+    public getMemoryModule() { return this.memoryModule; }
+    public getGuardModule() { return this.guardModule; }
+    public getConfig() { return this.configLoader.load(); }
+
     private registerTools() {
         // --- Identity Tools ---
         this.server.tool(

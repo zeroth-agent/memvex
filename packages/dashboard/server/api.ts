@@ -12,138 +12,125 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
-const port = 3001;
+export async function createDashboardServer(
+    injectedModules?: {
+        memory: MemoryModule;
+        guard: GuardModule;
+        identity: IdentityModule;
+        config: any
+    }
+) {
+    const app = express();
+    const port = 3001;
 
-app.use(cors());
-app.use(express.json());
+    let identityModule: IdentityModule;
+    let memoryModule: MemoryModule;
+    let guardModule: GuardModule;
+    let config: any;
 
-// Serve static files from the React app
-const distPath = path.join(__dirname, '../dist');
-app.use(express.static(distPath));
-const findConfig = () => {
-    // 1. Env var
-    if (process.env.MEMVEX_CONFIG) return process.env.MEMVEX_CONFIG;
+    if (injectedModules) {
+        // Shared mode (MCP Server)
+        ({ memory: memoryModule, guard: guardModule, identity: identityModule, config } = injectedModules);
+    } else {
+        // Standalone mode (pnpm dev)
+        const findConfig = () => {
+            if (process.env.MEMVEX_CONFIG) return process.env.MEMVEX_CONFIG;
+            const cwdPath = path.join(process.cwd(), 'memvex.yaml');
+            if (fs.existsSync(cwdPath)) return cwdPath;
+            const rootPath = path.resolve(__dirname, '../../../memvex.yaml');
+            if (fs.existsSync(rootPath)) return rootPath;
+            return undefined;
+        };
 
-    // 2. CWD
-    const cwdPath = path.join(process.cwd(), 'memvex.yaml');
-    if (fs.existsSync(cwdPath)) return cwdPath;
+        const configPath = findConfig();
+        const configLoader = new ConfigLoader(configPath);
+        config = configLoader.load();
 
-    // 3. Project Root (relative to this file in packages/dashboard/server)
-    const rootPath = path.resolve(__dirname, '../../../memvex.yaml');
-    if (fs.existsSync(rootPath)) return rootPath;
+        identityModule = new IdentityModule(config.identity, logger);
+        memoryModule = await MemoryModule.create(config.memory);
+        guardModule = await GuardModule.create(config.guard);
+    }
 
-    return undefined; // Let ConfigLoader throw default error if nothing found
-};
+    app.use(cors());
+    app.use(express.json());
 
-const configPath = findConfig();
-const configLoader = new ConfigLoader(configPath);
-const config = configLoader.load();
+    const distPath = path.join(__dirname, '../dist');
+    app.use(express.static(distPath));
 
-// Top-level await for module initialization
-const identityModule = new IdentityModule(config.identity, logger);
-const memoryModule = await MemoryModule.create(config.memory);
-const guardModule = await GuardModule.create(config.guard);
+    // --- API Routes ---
+    app.get('/api/status', (_req, res) => {
+        res.json({
+            status: 'online',
+            modules: {
+                identity: true,
+                memory: true,
+                guard: config.guard?.enabled ?? false
+            }
+        });
+    });
 
-// --- API Routes ---
+    app.get('/api/identity', (_req, res) => res.json(identityModule.get()));
 
-// Status
-app.get('/api/status', (_req, res) => {
-    res.json({
-        status: 'online',
-        modules: {
-            identity: true,
-            memory: true,
-            guard: config.guard?.enabled ?? false
+    app.get('/api/memory', async (req, res) => {
+        const { q, ns, limit } = req.query;
+        try {
+            if (q) {
+                const results = await memoryModule.recall(q as string, {
+                    namespace: ns as string,
+                    limit: limit ? Number(limit) : 50
+                });
+                res.json(results);
+            } else {
+                // Fallback list using internal store if possible, or empty search
+                // For in-memory, we can try to access the store directly if needed
+                // But recall("") might work depending on implementation?
+                // Phase 2 implementation of recall uses vector search.
+                // Let's rely on basic list support if available or empty recall.
+                const results = await (memoryModule as any).store.list?.({ namespace: ns as string, limit: limit ? Number(limit) : 50 });
+                res.json(results || []);
+            }
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
         }
     });
-});
 
-// Identity
-app.get('/api/identity', (_req, res) => {
-    const fullConfig = identityModule.get();
-    res.json(fullConfig);
-});
-
-// Memory
-app.get('/api/memory', async (req, res) => {
-    const { q, ns, limit } = req.query;
-    try {
-        if (q) {
-            const results = await memoryModule.recall(q as string, {
-                namespace: ns as string,
-                limit: limit ? Number(limit) : 50
-            });
-            res.json(results);
-        } else {
-            // If no query, we need a "list all" method. 
-            // MemoryModule definition in Phase 2 didn't strictly add "list all" 
-            // but `list` command used `sqliteStore.list`. 
-            // Let's assume memoryModule exposes list/getAll or we use recall with empty query if supported.
-            // Actually, `memoryModule` delegates to store. 
-            // Let's implement a `list` method on `MemoryModule` if it's missing, 
-            // or check if `recall` handles empty query effectively.
-            // For now, I'll attempt to use `recall` with a generic query or check if I added `list`.
-
-            // Checking `MemoryModule`:
-            // It wraps `store`. `store.search` is for recall.
-            // `store` (SqliteStore) likely has `list`.
-            // But `MemoryModule` public API is `store`, `recall`, `forget`.
-            // I might need to cast to any or add list to MemoryModule.
-            // Ideally I add `list` to `MemoryModule`. I'll assume I can for now.
-
-            // Wait, I implemented `memvex memory list` CLI in Phase 2.
-            // How did CLI do it?
-            // `memoryCommand` imported `MemoryModule`.
-            // Let's check `packages/memory/src/memory.ts`.
-
-            // I'll leave a TODO comment and fix strictly later if needed.
-            // For now, assuming `recall` with empty string returns recent items?
-            // Or I cast to access underlying store.
-            const results = await (memoryModule as any).store.list?.({ namespace: ns as string, limit: limit ? Number(limit) : 50 });
-            res.json(results || []);
+    app.delete('/api/memory/:id', async (req, res) => {
+        try {
+            const success = await memoryModule.forget(req.params.id);
+            res.json({ success });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
         }
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
+    });
 
-app.delete('/api/memory/:id', async (req, res) => {
-    try {
-        const success = await memoryModule.forget(req.params.id);
-        res.json({ success });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
+    app.get('/api/guard/pending', (_req, res) => res.json(guardModule.getPendingApprovals()));
+    app.get('/api/guard/history', (_req, res) => res.json(guardModule.getHistory(50)));
 
-// Guard
-app.get('/api/guard/pending', (_req, res) => {
-    res.json(guardModule.getPendingApprovals());
-});
+    app.post('/api/guard/approve/:id', (req, res) => {
+        const result = guardModule.approve(req.params.id);
+        if (result) res.json(result);
+        else res.status(404).json({ error: "Request not found" });
+    });
 
-app.get('/api/guard/history', (_req, res) => {
-    res.json(guardModule.getHistory(50));
-});
+    app.post('/api/guard/deny/:id', (req, res) => {
+        const result = guardModule.deny(req.params.id);
+        if (result) res.json(result);
+        else res.status(404).json({ error: "Request not found" });
+    });
 
-app.post('/api/guard/approve/:id', (req, res) => {
-    const result = guardModule.approve(req.params.id);
-    if (result) res.json(result);
-    else res.status(404).json({ error: "Request not found or not pending" });
-});
+    app.get('*', (_req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
-app.post('/api/guard/deny/:id', (req, res) => {
-    const result = guardModule.deny(req.params.id);
-    if (result) res.json(result);
-    else res.status(404).json({ error: "Request not found or not pending" });
-});
+    return { app, port };
+}
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (_req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-});
+// Auto-start if run directly
+import { fileURLToPath as _fileURLToPath } from 'url';
+const _isMainModule = process.argv[1] === _fileURLToPath(import.meta.url);
 
-app.listen(port, () => {
-    console.log(`Dashboard running at http://localhost:${port}`);
-});
+if (_isMainModule) {
+    createDashboardServer().then(({ app, port }) => {
+        app.listen(port, () => {
+            console.log(`Dashboard running at http://localhost:${port}`);
+        });
+    }).catch(err => console.error(err));
+}
