@@ -23,7 +23,7 @@ export class GuardModule {
                 const { SqliteApprovalQueue } = await import('./sqlite-approvals.js');
                 backend = new SqliteApprovalQueue();
             } catch (error) {
-                console.warn('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory approval queue.');
+                process.stderr.write('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory approval queue.\n');
                 backend = new InMemoryApprovalQueue();
             }
         } else {

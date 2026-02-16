@@ -14,7 +14,7 @@ export class MemoryModule {
                 const { SqliteStore } = await import('./sqlite-store.js');
                 return new MemoryModule(new SqliteStore(config.path));
             } catch (error) {
-                console.warn('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory storage.');
+                process.stderr.write('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory storage.\n');
                 return new MemoryModule(new InMemoryStore());
             }
         }

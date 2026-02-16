@@ -18,28 +18,25 @@ export class Logger {
         return this.context ? `[${this.context}] ${message}` : message;
     }
 
+    private log(level: string, message: string, ...args: any[]) {
+        const extra = args.length ? ' ' + args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') : '';
+        process.stderr.write(`[${level}] ${new Date().toISOString()} - ${this.formatMessage(message)}${extra}\n`);
+    }
+
     debug(message: string, ...args: any[]) {
-        if (this.level <= LogLevel.DEBUG) {
-            console.debug(`[DEBUG] ${new Date().toISOString()} - ${this.formatMessage(message)}`, ...args);
-        }
+        if (this.level <= LogLevel.DEBUG) this.log('DEBUG', message, ...args);
     }
 
     info(message: string, ...args: any[]) {
-        if (this.level <= LogLevel.INFO) {
-            console.info(`[INFO] ${new Date().toISOString()} - ${this.formatMessage(message)}`, ...args);
-        }
+        if (this.level <= LogLevel.INFO) this.log('INFO', message, ...args);
     }
 
     warn(message: string, ...args: any[]) {
-        if (this.level <= LogLevel.WARN) {
-            console.warn(`[WARN] ${new Date().toISOString()} - ${this.formatMessage(message)}`, ...args);
-        }
+        if (this.level <= LogLevel.WARN) this.log('WARN', message, ...args);
     }
 
     error(message: string, ...args: any[]) {
-        if (this.level <= LogLevel.ERROR) {
-            console.error(`[ERROR] ${new Date().toISOString()} - ${this.formatMessage(message)}`, ...args);
-        }
+        if (this.level <= LogLevel.ERROR) this.log('ERROR', message, ...args);
     }
 }
 
