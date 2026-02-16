@@ -1,31 +1,40 @@
 import { RulesEngine } from './rules.js';
-import { ApprovalQueue } from './approvals.js';
+import { ApprovalBackend, InMemoryApprovalQueue } from './approvals.js';
+import { SqliteApprovalQueue } from './sqlite-approvals.js';
 import { GuardRule, GuardDecision } from './schema.js';
 
-/**
- * GuardModule — the action-level permission engine.
- * 
- * "What can I do?" — Every agent checks Guard before taking consequential actions.
- * This is the differentiated pillar: not content safety, but personal action control.
- */
 export class GuardModule {
     private engine: RulesEngine;
-    private approvals: ApprovalQueue;
+    private approvals: ApprovalBackend;
 
-    constructor(rules: GuardRule[]) {
+    constructor(rules: GuardRule[], backend?: ApprovalBackend) {
         this.engine = new RulesEngine(rules);
-        this.approvals = new ApprovalQueue();
+        this.approvals = backend || new InMemoryApprovalQueue();
+    }
+
+    static create(config?: { enabled: boolean; rules: GuardRule[]; persist?: boolean }): GuardModule {
+        if (!config || !config.enabled) {
+            // If disabled or no config, we return a permissive guard.
+            return new GuardModule([]);
+        }
+
+        const backend = config.persist !== false
+            ? new SqliteApprovalQueue()
+            : new InMemoryApprovalQueue();
+
+        return new GuardModule(config.rules, backend);
     }
 
     /**
      * Check if an action is allowed.
-     * Returns the decision and, if approval is required, creates an approval request.
      */
     check(action: string, params?: Record<string, unknown>, agent?: string): GuardDecision & { approvalId?: string } {
         const decision = this.engine.check(action, params);
 
         if (decision.requiresApproval) {
-            const request = this.approvals.submit(action, agent, params);
+            // Only create request if one isn't already pending? 
+            // For now, simple logic: always create new request.
+            const request = this.approvals.submit(action, agent, params, decision.reason);
             return { ...decision, approvalId: request.id };
         }
 
@@ -45,5 +54,15 @@ export class GuardModule {
     /** Get all pending approval requests. */
     getPendingApprovals() {
         return this.approvals.getPending();
+    }
+
+    /** Get recent approval history. */
+    getHistory(limit?: number) {
+        return this.approvals.getHistory(limit);
+    }
+
+    /** Get a specific approval request. */
+    get(id: string) {
+        return this.approvals.get(id);
     }
 }

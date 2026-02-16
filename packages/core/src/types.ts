@@ -21,6 +21,7 @@ export interface MemoryConfig {
 
 export interface GuardConfig {
     enabled: boolean;
+    persist?: boolean;
     rules: GuardRule[];
 }
 
