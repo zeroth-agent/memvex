@@ -18,11 +18,17 @@ async function main() {
         try {
             process.stderr.write(`[INFO] Starting dashboard in SHARED PROCESS mode...\n`);
 
+            // ...
+
             const __filename = fileURLToPath(import.meta.url);
             const __dirname = path.dirname(__filename);
+
             // Import source file directly - tsx can handle .ts files
+            // On Windows, import() requires file:// URL
             const dashboardPath = path.resolve(__dirname, '../../dashboard/server/api.ts');
-            const { createDashboardServer } = await import(dashboardPath);
+            const dashboardUrl = pathToFileURL(dashboardPath).href;
+
+            const { createDashboardServer } = await import(dashboardUrl);
 
             const { app, port } = await createDashboardServer({
                 memory: server.getMemoryModule(),

@@ -81,12 +81,8 @@ export async function createDashboardServer(
                 });
                 res.json(results);
             } else {
-                // Fallback list using internal store if possible, or empty search
-                // For in-memory, we can try to access the store directly if needed
-                // But recall("") might work depending on implementation?
-                // Phase 2 implementation of recall uses vector search.
-                // Let's rely on basic list support if available or empty recall.
-                const results = await (memoryModule as any).store.list?.({ namespace: ns as string, limit: limit ? Number(limit) : 50 });
+                // List all memories, optionally filtered by namespace
+                const results = await memoryModule.list(ns as string | undefined);
                 res.json(results || []);
             }
         } catch (error: any) {

@@ -17,19 +17,26 @@ export class SqlJsApprovalQueue implements ApprovalBackend {
     }
 
     static async create(dbPath?: string): Promise<SqlJsApprovalQueue> {
+        // Get the directory of THIS module (packages/guard/src/)
+        const currentDir = path.dirname(fileURLToPath(import.meta.url));
+        // Navigate to project root: ../../../ from packages/guard/src/
+        const projectRoot = path.resolve(currentDir, '../../..');
+
         // Load sql.js with WASM from node_modules
         const SQL = await initSqlJs({
             locateFile: (filename: string) => {
-                // Get the directory of THIS module (packages/guard/src/)
-                const currentDir = path.dirname(fileURLToPath(import.meta.url));
-                // Navigate to project root: ../../../ from packages/guard/src/
-                const projectRoot = path.resolve(currentDir, '../../..');
                 // Path to WASM in pnpm structure
                 const wasmPath = path.join(projectRoot, 'node_modules/.pnpm/sql.js@1.14.0/node_modules/sql.js/dist', filename);
                 return wasmPath;
             }
         });
-        const resolvedPath = dbPath || DEFAULT_DB_PATH;
+
+        // Resolve DB path relative to project root if it's relative
+        let resolvedPath = dbPath || DEFAULT_DB_PATH;
+        if (resolvedPath.startsWith('.')) {
+            resolvedPath = path.resolve(projectRoot, resolvedPath);
+        }
+
         const dir = path.dirname(resolvedPath);
 
         // Ensure directory exists
