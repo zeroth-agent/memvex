@@ -14,6 +14,9 @@
         },
         {
             "path": "../identity"
+        },
+        {
+            "path": "../memory"
         }
     ]
 }

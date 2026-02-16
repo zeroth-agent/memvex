@@ -1,19 +1,19 @@
 import { MemoryBackend, InMemoryStore } from './store.js';
+import { SqliteStore } from './sqlite-store.js';
 import { MemoryEntry, MemoryQuery } from './schema.js';
 
-/**
- * MemoryModule — the cross-agent memory router.
- * 
- * "Agent A learns something, Agent B knows it."
- * 
- * This module abstracts over pluggable memory backends (InMemory, SQLite, Mem0).
- * It provides the unified interface that all MCP tools call.
- */
 export class MemoryModule {
     private backend: MemoryBackend;
 
     constructor(backend?: MemoryBackend) {
         this.backend = backend || new InMemoryStore();
+    }
+
+    static create(config?: { storage?: string; path?: string }): MemoryModule {
+        if (config?.storage === 'sqlite') {
+            return new MemoryModule(new SqliteStore(config.path));
+        }
+        return new MemoryModule(new InMemoryStore());
     }
 
     /** Store a new memory, optionally tagged with the source agent and namespace. */

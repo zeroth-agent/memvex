@@ -1,4 +1,4 @@
-import { IdentityConfig, Logger } from '@cortex/core';
+import { IdentityConfig, Logger } from '@memvex/core';
 
 export class IdentityModule {
     private config: IdentityConfig;

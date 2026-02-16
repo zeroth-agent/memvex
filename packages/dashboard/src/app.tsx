@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
 const TYPING_LINES = [
-    { agent: "cursor", action: "cortex.identity.get('coding.style')", result: "→ functional, typescript, vitest" },
-    { agent: "claude", action: "cortex.memory.recall('project atlas')", result: "→ 3 entries found, latest: 'client prefers detailed proposals'" },
-    { agent: "email-agent", action: "cortex.guard.check('send_external_email')", result: "→ ⚠ requires approval — awaiting confirmation" },
+    { agent: "cursor", action: "memvex.identity.get('coding.style')", result: "→ functional, typescript, vitest" },
+    { agent: "claude", action: "memvex.memory.recall('project atlas')", result: "→ 3 entries found, latest: 'client prefers detailed proposals'" },
+    { agent: "email-agent", action: "memvex.guard.check('send_external_email')", result: "→ ⚠ requires approval — awaiting confirmation" },
 ];
 
 function TerminalDemo() {
@@ -44,7 +44,7 @@ function TerminalDemo() {
                 <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#febc2e" }} />
                 <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#28c840" }} />
                 <span style={{ marginLeft: "12px", color: "#3d4250", fontSize: "12px" }}>
-                    cortex — live agent activity
+                    memvex — live agent activity
                 </span>
             </div>
             <div style={{ padding: "20px 22px", minHeight: "160px" }}>
@@ -246,7 +246,7 @@ guard:
                         color: "#4a5068",
                     }}
                 >
-                    cortex.yaml
+                    memvex.yaml
                 </span>
                 <span
                     style={{
@@ -319,20 +319,20 @@ function HowItWorks() {
         {
             num: "01",
             title: "Install & init",
-            desc: "One command. Creates cortex.yaml and starts the MCP server locally.",
-            code: "npx cortex init",
+            desc: "One command. Creates memvex.yaml and starts the MCP server locally.",
+            code: "npx memvex init",
         },
         {
             num: "02",
             title: "Define yourself",
-            desc: "Edit cortex.yaml with your preferences, rules, and context. Or use the web UI.",
-            code: "vim cortex.yaml",
+            desc: "Edit memvex.yaml with your preferences, rules, and context. Or use the web UI.",
+            code: "vim memvex.yaml",
         },
         {
             num: "03",
             title: "Point your agents",
-            desc: "Add Cortex as an MCP server in Claude, Cursor, or any MCP-compatible tool.",
-            code: '{ "mcpServers": { "cortex": { "command": "cortex serve" } } }',
+            desc: "Add Memvex as an MCP server in Claude, Cursor, or any MCP-compatible tool.",
+            code: '{ "mcpServers": { "memvex": { "command": "memvex serve" } } }',
         },
         {
             num: "04",
@@ -422,10 +422,10 @@ function NavBar() {
                         color: "#0a0c0f",
                     }}
                 >
-                    C
+                    M
                 </div>
                 <span style={{ fontSize: "16px", fontWeight: 700, color: "#e8eaed", letterSpacing: "-0.02em" }}>
-                    cortex
+                    memvex
                 </span>
                 <span
                     style={{
@@ -587,7 +587,7 @@ export default function App() {
                             animation: "gradientShift 4s ease infinite",
                         }}
                     >
-                        Cortex fixes that.
+                        Memvex fixes that.
                     </span>
                 </h1>
                 <p
@@ -621,7 +621,7 @@ export default function App() {
                         }}
                     >
                         <span style={{ color: "#4a5068" }}>$</span>
-                        npx cortex init
+                        npx memvex init
                         <span style={{ color: "#4a5068", fontSize: "12px", marginLeft: "4px" }}>📋</span>
                     </div>
                     <div
@@ -670,11 +670,11 @@ export default function App() {
                     <ModuleCard
                         icon="🪪"
                         name="Identity"
-                        tagline="cortex/identity"
+                        tagline="memvex/identity"
                         description="Your preferences, context, and rules — queryable by any agent. Define your coding style, communication tone, schedule constraints, and project context once."
                         commands={[
-                            "cortex.identity.get('coding.style')",
-                            "cortex.identity.get('communication.clients')",
+                            "memvex.identity.get('coding.style')",
+                            "memvex.identity.get('communication.clients')",
                         ]}
                         color="#4ecdc4"
                         delay={0.1}
@@ -682,11 +682,11 @@ export default function App() {
                     <ModuleCard
                         icon="🧠"
                         name="Memory"
-                        tagline="cortex/memory"
+                        tagline="memvex/memory"
                         description="Shared knowledge layer across all your agents. Agent A learns something, Agent B knows it. Persistent context that compounds over time."
                         commands={[
-                            "cortex.memory.store('client:alex likes detail')",
-                            "cortex.memory.recall('project atlas')",
+                            "memvex.memory.store('client:alex likes detail')",
+                            "memvex.memory.recall('project atlas')",
                         ]}
                         color="#a78bfa"
                         delay={0.2}
@@ -694,11 +694,11 @@ export default function App() {
                     <ModuleCard
                         icon="🛡️"
                         name="Guard"
-                        tagline="cortex/guard"
+                        tagline="memvex/guard"
                         description="Action rules and guardrails. Before any agent takes a consequential action, it checks Guard. Set spend limits, require approvals, block risky actions."
                         commands={[
-                            "cortex.guard.check('spend', {amount: 75})",
-                            "cortex.guard.check('send_external_email')",
+                            "memvex.guard.check('spend', {amount: 75})",
+                            "memvex.guard.check('send_external_email')",
                         ]}
                         color="#e8b44d"
                         delay={0.3}
@@ -837,7 +837,7 @@ export default function App() {
                         }}
                     >
                         <span style={{ color: "#4a5068" }}>$</span>
-                        npx cortex init
+                        npx memvex init
                     </div>
                     <div
                         style={{
@@ -870,7 +870,7 @@ export default function App() {
                 }}
             >
                 <div style={{ color: "#2a2e38", fontSize: "13px", fontFamily: "'JetBrains Mono', monospace" }}>
-                    cortex · built by{" "}
+                    memvex · built by{" "}
                     <span style={{ color: "#4a5068" }}>[your name]</span> · hosted on{" "}
                     <span style={{ color: "#4ecdc4" }}>memvex.dev</span>
                 </div>

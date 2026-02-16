@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
-import { CortexConfig } from './types.js';
+import { MemvexConfig } from './types.js';
 
 export class ConfigLoader {
     private configPath: string;
@@ -10,14 +10,14 @@ export class ConfigLoader {
         this.configPath = configPath || path.join(process.cwd(), 'memvex.yaml');
     }
 
-    load(): CortexConfig {
+    load(): MemvexConfig {
         if (!fs.existsSync(this.configPath)) {
             throw new Error(`Config file not found at ${this.configPath}. Run 'memvex init' first.`);
         }
 
         try {
             const fileContents = fs.readFileSync(this.configPath, 'utf8');
-            const config = yaml.load(fileContents) as CortexConfig;
+            const config = yaml.load(fileContents) as MemvexConfig;
             return config;
         } catch (e: any) {
             throw new Error(`Failed to parse config file: ${e.message}`);

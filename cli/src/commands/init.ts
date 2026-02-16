@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import fs from 'fs';
 import path from 'path';
 import inquirer from 'inquirer';
-import { logger } from '@cortex/core';
+import { logger } from '@memvex/core';
 
 export const initCommand = new Command('init')
   .description('Initialize a new Memvex configuration')

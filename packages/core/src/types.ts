@@ -1,4 +1,4 @@
-export interface CortexConfig {
+export interface MemvexConfig {
     identity: IdentityConfig;
     memory?: MemoryConfig;
     guard?: GuardConfig;
@@ -33,7 +33,7 @@ export interface GuardRule {
     message?: string;
 }
 
-export interface CortexEvent {
+export interface MemvexEvent {
     type: 'config_loaded' | 'action_blocked' | 'action_approved' | 'memory_stored';
     payload: any;
     timestamp: string;
