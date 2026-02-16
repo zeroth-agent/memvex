@@ -7,6 +7,7 @@ import { GuardModule } from '@memvex/guard';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,9 +21,23 @@ app.use(express.json());
 // Serve static files from the React app
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
+const findConfig = () => {
+    // 1. Env var
+    if (process.env.MEMVEX_CONFIG) return process.env.MEMVEX_CONFIG;
 
-// Initialize Modules
-const configLoader = new ConfigLoader();
+    // 2. CWD
+    const cwdPath = path.join(process.cwd(), 'memvex.yaml');
+    if (fs.existsSync(cwdPath)) return cwdPath;
+
+    // 3. Project Root (relative to this file in packages/dashboard/server)
+    const rootPath = path.resolve(__dirname, '../../../memvex.yaml');
+    if (fs.existsSync(rootPath)) return rootPath;
+
+    return undefined; // Let ConfigLoader throw default error if nothing found
+};
+
+const configPath = findConfig();
+const configLoader = new ConfigLoader(configPath);
 const config = configLoader.load();
 const identityModule = new IdentityModule(config.identity, logger);
 const memoryModule = MemoryModule.create(config.memory);
