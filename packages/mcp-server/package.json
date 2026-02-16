@@ -1,5 +1,5 @@
 {
-    "name": "@cortex/mcp-server",
+    "name": "@memvex/mcp-server",
     "version": "0.1.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -8,8 +8,9 @@
         "dev": "tsc -w"
     },
     "dependencies": {
-        "@cortex/core": "workspace:*",
-        "@cortex/identity": "workspace:*",
+        "@memvex/core": "workspace:*",
+        "@memvex/identity": "workspace:*",
+        "@memvex/memory": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.0.1",
         "zod": "^3.22.4"
     },

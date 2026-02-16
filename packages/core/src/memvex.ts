@@ -1,9 +1,8 @@
-// @memvex/core/src/cortex.ts
+// @memvex/core/src/memvex.ts
 
 import { Logger } from "./logger.js";
 import { ConfigError } from "./errors.js";
 
-// Placeholder for module types until they are implemented
 interface IdentityModule {
     init(): Promise<void>;
 }
@@ -16,29 +15,29 @@ interface GuardModule {
     init(): Promise<void>;
 }
 
-export class Cortex {
+export class Memvex {
     private logger: Logger;
     private identity?: IdentityModule;
     private memory?: MemoryModule;
     private guard?: GuardModule;
 
     constructor() {
-        this.logger = new Logger("cortex");
+        this.logger = new Logger("memvex");
     }
 
     async init(configPath: string) {
-        this.logger.info(`Initializing Cortex with config: ${configPath}`);
+        this.logger.info(`Initializing Memvex with config: ${configPath}`);
 
         // TODO: Load config
         // TODO: Initialize Identity Module
         // TODO: Initialize Memory Module
         // TODO: Initialize Guard Module
 
-        this.logger.info("Cortex initialized successfully");
+        this.logger.info("Memvex initialized successfully");
     }
 
     async shutdown() {
-        this.logger.info("Shutting down Cortex...");
+        this.logger.info("Shutting down Memvex...");
         // TODO: Graceful shutdown of modules
     }
 }

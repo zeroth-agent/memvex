@@ -26,4 +26,4 @@ export const MemoryQuerySchema = z.object({
     tags: z.array(z.string()).optional().describe("Filter by tags"),
 });
 
-export type MemoryQuery = z.infer<typeof MemoryQuerySchema>;
+export type MemoryQuery = z.input<typeof MemoryQuerySchema>;

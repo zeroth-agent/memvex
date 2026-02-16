@@ -1,16 +1,17 @@
 {
-    "name": "cortex-cli",
+    "name": "memvex-cli",
     "version": "0.1.0",
     "bin": {
-        "cortex": "./dist/index.js"
+        "memvex": "./dist/index.js"
     },
     "scripts": {
         "build": "tsc",
         "dev": "tsc -w"
     },
     "dependencies": {
-        "@cortex/core": "workspace:*",
-        "@cortex/mcp-server": "workspace:*",
+        "@memvex/core": "workspace:*",
+        "@memvex/memory": "workspace:*",
+        "@memvex/mcp-server": "workspace:*",
         "commander": "^11.1.0",
         "inquirer": "^9.2.11"
     },
