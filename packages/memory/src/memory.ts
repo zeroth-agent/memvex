@@ -14,7 +14,7 @@ export class MemoryModule {
                 const { SqliteStore } = await import('./sqlite-store.js');
                 return new MemoryModule(new SqliteStore(config.path));
             } catch (error) {
-                console.warn('Failed to load SQLite store (likely missing better-sqlite3 binding). Falling back to in-memory store.', error);
+                console.warn('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory storage.');
                 return new MemoryModule(new InMemoryStore());
             }
         }
