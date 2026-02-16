@@ -1,6 +1,5 @@
 import { RulesEngine } from './rules.js';
 import { ApprovalBackend, InMemoryApprovalQueue } from './approvals.js';
-import { SqliteApprovalQueue } from './sqlite-approvals.js';
 import { GuardRule, GuardDecision } from './schema.js';
 
 export class GuardModule {
@@ -12,15 +11,24 @@ export class GuardModule {
         this.approvals = backend || new InMemoryApprovalQueue();
     }
 
-    static create(config?: { enabled: boolean; rules: GuardRule[]; persist?: boolean }): GuardModule {
+    static async create(config?: { enabled: boolean; rules: GuardRule[]; persist?: boolean }): Promise<GuardModule> {
         if (!config || !config.enabled) {
             // If disabled or no config, we return a permissive guard.
             return new GuardModule([]);
         }
 
-        const backend = config.persist !== false
-            ? new SqliteApprovalQueue()
-            : new InMemoryApprovalQueue();
+        let backend: ApprovalBackend;
+        if (config.persist !== false) {
+            try {
+                const { SqlJsApprovalQueue } = await import('./sqljs-approvals.js');
+                backend = await SqlJsApprovalQueue.create();
+            } catch (error) {
+                process.stderr.write('⚠ SQLite unavailable (sql.js loading failed). Using in-memory approval queue.\n');
+                backend = new InMemoryApprovalQueue();
+            }
+        } else {
+            backend = new InMemoryApprovalQueue();
+        }
 
         return new GuardModule(config.rules, backend);
     }

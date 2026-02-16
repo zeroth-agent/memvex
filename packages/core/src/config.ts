@@ -7,7 +7,7 @@ export class ConfigLoader {
     private configPath: string;
 
     constructor(configPath?: string) {
-        this.configPath = configPath || path.join(process.cwd(), 'memvex.yaml');
+        this.configPath = configPath || process.env.MEMVEX_CONFIG || path.join(process.cwd(), 'memvex.yaml');
     }
 
     load(): MemvexConfig {

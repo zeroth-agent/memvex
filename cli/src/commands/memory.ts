@@ -6,13 +6,37 @@ export const memoryCommand = new Command('memory')
     .description('Interact with the memory module');
 
 memoryCommand
+    .command('add <content>')
+    .description('Store a new memory')
+    .option('-n, --namespace <namespace>', 'Namespace for the memory')
+    .option('-t, --tags <tags>', 'Comma-separated tags')
+    .action(async (content, opts) => {
+        try {
+            const config = new ConfigLoader().load();
+            const memory = await MemoryModule.create(config.memory);
+            const tags = opts.tags ? opts.tags.split(',').map((t: string) => t.trim()) : undefined;
+
+            const entry = await memory.store(content, {
+                namespace: opts.namespace,
+                tags
+            });
+
+            console.log(`✓ Memory stored with ID: ${entry.id}`);
+            if (entry.namespace) console.log(`  Namespace: ${entry.namespace}`);
+            if (entry.tags?.length) console.log(`  Tags: ${entry.tags.join(', ')}`);
+        } catch (err: any) {
+            logger.error('Failed to store memory:', err.message);
+        }
+    });
+
+memoryCommand
     .command('list')
     .description('List recent memories')
     .option('-n, --namespace <namespace>', 'Filter by namespace')
     .action(async (opts) => {
         try {
             const config = new ConfigLoader().load();
-            const memory = MemoryModule.create(config.memory);
+            const memory = await MemoryModule.create(config.memory);
             const entries = await memory.list(opts.namespace);
 
             if (entries.length === 0) {
@@ -40,7 +64,7 @@ memoryCommand
     .action(async (query, opts) => {
         try {
             const config = new ConfigLoader().load();
-            const memory = MemoryModule.create(config.memory);
+            const memory = await MemoryModule.create(config.memory);
             const results = await memory.recall(query, {
                 namespace: opts.namespace,
                 limit: parseInt(opts.limit),

@@ -1,5 +1,4 @@
 import { MemoryBackend, InMemoryStore } from './store.js';
-import { SqliteStore } from './sqlite-store.js';
 import { MemoryEntry, MemoryQuery } from './schema.js';
 
 export class MemoryModule {
@@ -9,9 +8,16 @@ export class MemoryModule {
         this.backend = backend || new InMemoryStore();
     }
 
-    static create(config?: { storage?: string; path?: string }): MemoryModule {
+    static async create(config?: { storage?: string; path?: string }): Promise<MemoryModule> {
         if (config?.storage === 'sqlite') {
-            return new MemoryModule(new SqliteStore(config.path));
+            try {
+                const { SqlJsStore } = await import('./sqljs-store.js');
+                return new MemoryModule(await SqlJsStore.create(config.path));
+            } catch (error) {
+                process.stderr.write(`⚠ SQLite unavailable (sql.js loading failed). Using in-memory storage.\n`);
+                process.stderr.write(`  Error details: ${error}\n`);
+                return new MemoryModule(new InMemoryStore());
+            }
         }
         return new MemoryModule(new InMemoryStore());
     }
