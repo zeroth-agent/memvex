@@ -1,6 +1,7 @@
 import initSqlJs, { Database } from 'sql.js';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { ApprovalBackend } from './approvals.js';
 import { ApprovalRequest } from './schema.js';
 
@@ -19,8 +20,12 @@ export class SqlJsApprovalQueue implements ApprovalBackend {
         // Load sql.js with WASM from node_modules
         const SQL = await initSqlJs({
             locateFile: (filename: string) => {
-                // pnpm uses .pnpm/package@version/node_modules/package structure
-                const wasmPath = path.resolve(process.cwd(), 'node_modules/.pnpm/sql.js@1.14.0/node_modules/sql.js/dist', filename);
+                // Get the directory of THIS module (packages/guard/src/)
+                const currentDir = path.dirname(fileURLToPath(import.meta.url));
+                // Navigate to project root: ../../../ from packages/guard/src/
+                const projectRoot = path.resolve(currentDir, '../../..');
+                // Path to WASM in pnpm structure
+                const wasmPath = path.join(projectRoot, 'node_modules/.pnpm/sql.js@1.14.0/node_modules/sql.js/dist', filename);
                 return wasmPath;
             }
         });
