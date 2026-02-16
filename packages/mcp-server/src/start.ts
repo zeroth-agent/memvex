@@ -7,7 +7,7 @@
 
 import { MemvexServer } from './server.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 async function main() {
     const server = new MemvexServer();
@@ -23,7 +23,9 @@ async function main() {
             const dashboardPath = path.resolve(__dirname, '../../dashboard/server/api.ts');
 
             // Dynamic import of the dashboard factory
-            const { createDashboardServer } = await import(dashboardPath);
+            // On Windows, import() requires file:// URL for absolute paths
+            const dashboardUrl = pathToFileURL(dashboardPath).href;
+            const { createDashboardServer } = await import(dashboardUrl);
 
             const { app, port } = await createDashboardServer({
                 memory: server.getMemoryModule(),
@@ -32,9 +34,17 @@ async function main() {
                 config: server.getConfig()
             });
 
-            // Start listening
-            app.listen(port, () => {
+            // Start listening with error handling
+            const httpServer = app.listen(port, () => {
                 process.stderr.write(`[Dashboard] Running at http://localhost:${port} (Shared Memory)\n`);
+            });
+
+            httpServer.on('error', (e: any) => {
+                if (e.code === 'EADDRINUSE') {
+                    process.stderr.write(`[ERROR] Dashboard port ${port} is already in use. Dashboard will not be available.\n`);
+                } else {
+                    process.stderr.write(`[ERROR] Dashboard server error: ${e}\n`);
+                }
             });
 
         } catch (err) {
