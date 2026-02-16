@@ -39,9 +39,11 @@ const findConfig = () => {
 const configPath = findConfig();
 const configLoader = new ConfigLoader(configPath);
 const config = configLoader.load();
+
+// Top-level await for module initialization
 const identityModule = new IdentityModule(config.identity, logger);
-const memoryModule = MemoryModule.create(config.memory);
-const guardModule = GuardModule.create(config.guard);
+const memoryModule = await MemoryModule.create(config.memory);
+const guardModule = await GuardModule.create(config.guard);
 
 // --- API Routes ---
 

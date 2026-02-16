@@ -7,19 +7,32 @@ import { GuardModule } from "@memvex/guard";
 import { z } from "zod";
 
 export class MemvexServer {
-    private server: McpServer;
-    private configLoader: ConfigLoader;
-    private identityModule: IdentityModule;
-    private memoryModule: MemoryModule;
-    private guardModule: GuardModule;
+    private server!: McpServer;
+    private configLoader!: ConfigLoader;
+    private identityModule!: IdentityModule;
+    private memoryModule!: MemoryModule;
+    private guardModule!: GuardModule;
 
     constructor() {
         this.configLoader = new ConfigLoader();
+
+        // Modules will be initialized in start()
+        // Type assertions are needed because strict property initialization is on 
+        // but we init in start() which is called immediately after construction usually.
+        // Better: Make them optional or use ! assertion if we guarantee start() is called.
+        // For now, I'll use ! assertion or just leave them uninitialized in constructor 
+        // and init them in start. 
+        // Actually, typescript will complain. 
+        // Let's use definitive assignment assertion or make them optional.
+        // Given existing code structure, let's use ! assertion.
+    }
+
+    async start() {
         const config = this.configLoader.load();
 
         this.identityModule = new IdentityModule(config.identity, logger);
-        this.memoryModule = MemoryModule.create(config.memory);
-        this.guardModule = GuardModule.create(config.guard);
+        this.memoryModule = await MemoryModule.create(config.memory);
+        this.guardModule = await GuardModule.create(config.guard);
 
         this.server = new McpServer({
             name: "memvex-mcp-server",
@@ -27,6 +40,10 @@ export class MemvexServer {
         });
 
         this.registerTools();
+
+        const transport = new StdioServerTransport();
+        await this.server.connect(transport);
+        logger.info("Memvex MCP Server started on stdio");
     }
 
     private registerTools() {
@@ -157,9 +174,5 @@ export class MemvexServer {
         );
     }
 
-    async start() {
-        const transport = new StdioServerTransport();
-        await this.server.connect(transport);
-        logger.info("Memvex MCP Server started on stdio");
-    }
+
 }

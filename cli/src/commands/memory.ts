@@ -12,7 +12,7 @@ memoryCommand
     .action(async (opts) => {
         try {
             const config = new ConfigLoader().load();
-            const memory = MemoryModule.create(config.memory);
+            const memory = await MemoryModule.create(config.memory);
             const entries = await memory.list(opts.namespace);
 
             if (entries.length === 0) {
@@ -40,7 +40,7 @@ memoryCommand
     .action(async (query, opts) => {
         try {
             const config = new ConfigLoader().load();
-            const memory = MemoryModule.create(config.memory);
+            const memory = await MemoryModule.create(config.memory);
             const results = await memory.recall(query, {
                 namespace: opts.namespace,
                 limit: parseInt(opts.limit),

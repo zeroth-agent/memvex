@@ -12,7 +12,7 @@ guardCommand
     .action(async (action, opts) => {
         try {
             const config = new ConfigLoader().load();
-            const guard = GuardModule.create(config.guard);
+            const guard = await GuardModule.create(config.guard);
 
             let params = {};
             if (opts.params) {
@@ -32,7 +32,7 @@ guardCommand
     .action(async () => {
         try {
             const config = new ConfigLoader().load();
-            const guard = GuardModule.create(config.guard);
+            const guard = await GuardModule.create(config.guard);
             const pending = guard.getPendingApprovals();
 
             if (pending.length === 0) {
@@ -62,7 +62,7 @@ guardCommand
     .action(async (id) => {
         try {
             const config = new ConfigLoader().load();
-            const guard = GuardModule.create(config.guard);
+            const guard = await GuardModule.create(config.guard);
             const result = guard.approve(id);
 
             if (result) {
@@ -81,7 +81,7 @@ guardCommand
     .action(async (id) => {
         try {
             const config = new ConfigLoader().load();
-            const guard = GuardModule.create(config.guard);
+            const guard = await GuardModule.create(config.guard);
             const result = guard.deny(id);
 
             if (result) {

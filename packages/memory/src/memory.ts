@@ -1,5 +1,4 @@
 import { MemoryBackend, InMemoryStore } from './store.js';
-import { SqliteStore } from './sqlite-store.js';
 import { MemoryEntry, MemoryQuery } from './schema.js';
 
 export class MemoryModule {
@@ -9,9 +8,15 @@ export class MemoryModule {
         this.backend = backend || new InMemoryStore();
     }
 
-    static create(config?: { storage?: string; path?: string }): MemoryModule {
+    static async create(config?: { storage?: string; path?: string }): Promise<MemoryModule> {
         if (config?.storage === 'sqlite') {
-            return new MemoryModule(new SqliteStore(config.path));
+            try {
+                const { SqliteStore } = await import('./sqlite-store.js');
+                return new MemoryModule(new SqliteStore(config.path));
+            } catch (error) {
+                console.warn('Failed to load SQLite store (likely missing better-sqlite3 binding). Falling back to in-memory store.', error);
+                return new MemoryModule(new InMemoryStore());
+            }
         }
         return new MemoryModule(new InMemoryStore());
     }

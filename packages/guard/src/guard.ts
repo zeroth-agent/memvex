@@ -1,6 +1,5 @@
 import { RulesEngine } from './rules.js';
 import { ApprovalBackend, InMemoryApprovalQueue } from './approvals.js';
-import { SqliteApprovalQueue } from './sqlite-approvals.js';
 import { GuardRule, GuardDecision } from './schema.js';
 
 export class GuardModule {
@@ -12,15 +11,24 @@ export class GuardModule {
         this.approvals = backend || new InMemoryApprovalQueue();
     }
 
-    static create(config?: { enabled: boolean; rules: GuardRule[]; persist?: boolean }): GuardModule {
+    static async create(config?: { enabled: boolean; rules: GuardRule[]; persist?: boolean }): Promise<GuardModule> {
         if (!config || !config.enabled) {
             // If disabled or no config, we return a permissive guard.
             return new GuardModule([]);
         }
 
-        const backend = config.persist !== false
-            ? new SqliteApprovalQueue()
-            : new InMemoryApprovalQueue();
+        let backend: ApprovalBackend;
+        if (config.persist !== false) {
+            try {
+                const { SqliteApprovalQueue } = await import('./sqlite-approvals.js');
+                backend = new SqliteApprovalQueue();
+            } catch (error) {
+                console.warn('Failed to load SQLite approval queue. Falling back to in-memory.', error);
+                backend = new InMemoryApprovalQueue();
+            }
+        } else {
+            backend = new InMemoryApprovalQueue();
+        }
 
         return new GuardModule(config.rules, backend);
     }
