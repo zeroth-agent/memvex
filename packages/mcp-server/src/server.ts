@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { ConfigLoader, logger } from "@memvex/core";
 import { IdentityModule } from "@memvex/identity";
 import { MemoryModule } from "@memvex/memory";
+import { GuardModule } from "@memvex/guard";
 import { z } from "zod";
 
 export class MemvexServer {
@@ -10,6 +11,7 @@ export class MemvexServer {
     private configLoader: ConfigLoader;
     private identityModule: IdentityModule;
     private memoryModule: MemoryModule;
+    private guardModule: GuardModule;
 
     constructor() {
         this.configLoader = new ConfigLoader();
@@ -17,6 +19,7 @@ export class MemvexServer {
 
         this.identityModule = new IdentityModule(config.identity, logger);
         this.memoryModule = MemoryModule.create(config.memory);
+        this.guardModule = GuardModule.create(config.guard);
 
         this.server = new McpServer({
             name: "memvex-mcp-server",
@@ -27,6 +30,7 @@ export class MemvexServer {
     }
 
     private registerTools() {
+        // --- Identity Tools ---
         this.server.tool(
             "identity_get",
             "Get user identity or preference by path (e.g. 'coding.style'). Returns full config if no path provided.",
@@ -41,6 +45,7 @@ export class MemvexServer {
             }
         );
 
+        // --- Memory Tools ---
         this.server.tool(
             "memory_store",
             "Store a new memory. Agents use this to save learnings, context, or facts that should persist across conversations and be available to all agents.",
@@ -83,6 +88,70 @@ export class MemvexServer {
                 const success = await this.memoryModule.forget(id);
                 return {
                     content: [{ type: "text", text: success ? `Memory ${id} deleted.` : `Memory ${id} not found.` }]
+                };
+            }
+        );
+
+        // --- Guard Tools ---
+        this.server.tool(
+            "guard_check",
+            "Check if an action is allowed by the user's guard rules. Returns whether the action is permitted, blocked, or requires human approval.",
+            {
+                action: z.string().describe("The action to check (e.g. 'spend_money', 'send_external_email')"),
+                params: z.record(z.unknown()).optional().describe("Optional parameters for the action"),
+                agent: z.string().optional().describe("The agent performing the action"),
+            },
+            async ({ action, params, agent }) => {
+                const decision = this.guardModule.check(action, params, agent);
+                return {
+                    content: [{ type: "text", text: JSON.stringify(decision, null, 2) }]
+                };
+            }
+        );
+
+        this.server.tool(
+            "guard_request_approval",
+            "Request human approval for a blocked action. Returns an approval ID that can be checked later.",
+            {
+                action: z.string().describe("The action requiring approval"),
+                reason: z.string().describe("Why the agent wants to perform this action"),
+                agent: z.string().optional().describe("The agent requesting approval"),
+                params: z.record(z.unknown()).optional(),
+            },
+            async ({ action, reason, agent, params }) => {
+                return {
+                    content: [{ type: "text", text: "Use guard_check to determine if approval is needed." }]
+                }
+            }
+        );
+
+        this.server.tool(
+            "guard_list_pending",
+            "List all actions currently pending human approval.",
+            {},
+            async () => {
+                const pending = this.guardModule.getPendingApprovals();
+                return {
+                    content: [{ type: "text", text: JSON.stringify(pending, null, 2) }]
+                };
+            }
+        );
+
+        this.server.tool(
+            "guard_approval_status",
+            "Check the status of a specific approval request.",
+            {
+                id: z.string().describe("Approval Request ID")
+            },
+            async ({ id }) => {
+                const request = this.guardModule.get(id);
+
+                if (!request) {
+                    return { content: [{ type: "text", text: `Approval ${id} not found.` }] };
+                }
+
+                return {
+                    content: [{ type: "text", text: JSON.stringify(request, null, 2) }]
                 };
             }
         );

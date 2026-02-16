@@ -11,6 +11,7 @@
         "@memvex/core": "workspace:*",
         "@memvex/identity": "workspace:*",
         "@memvex/memory": "workspace:*",
+        "@memvex/guard": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.0.1",
         "zod": "^3.22.4"
     },
