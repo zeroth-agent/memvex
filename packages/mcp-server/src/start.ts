@@ -6,54 +6,41 @@
  */
 
 import { MemvexServer } from './server.js';
-import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 async function main() {
+    const server = new MemvexServer();
+    await server.start();
+
     // Check for --dashboard flag
     if (process.argv.includes('--dashboard')) {
         try {
-            // Resolve path to dashboard server script relative to this file
-            // ../../dashboard/server/api.ts
-            const dashboardScript = path.resolve(__dirname, '../../dashboard/server/api.ts');
+            process.stderr.write(`[INFO] Starting dashboard in SHARED PROCESS mode...\n`);
 
-            // Log to stderr because stdout is for MCP protocol
-            process.stderr.write(`[INFO] Starting dashboard from ${dashboardScript}...\n`);
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+            const dashboardPath = path.resolve(__dirname, '../../dashboard/server/api.ts');
 
-            const dashboard = spawn('npx', ['tsx', dashboardScript], {
-                stdio: 'inherit', // inherit means it shares stderr/stdout, but we must be careful with stdout pollution
-                // Actually, dashboard logs to stdout might break MCP if they are not careful.
-                // But Express logs usually go to stdout.
-                // SAFEST: Ignore stdout, pipe stderr.
-                // OR: Pipe stdout to stderr? 
-                // Let's use 'pipe' and handle it.
-                shell: true,
-                env: { ...process.env }
+            // Dynamic import of the dashboard factory
+            const { createDashboardServer } = await import(dashboardPath);
+
+            const { app, port } = await createDashboardServer({
+                memory: server.getMemoryModule(),
+                guard: server.getGuardModule(),
+                identity: server.getIdentityModule(),
+                config: server.getConfig()
             });
 
-            // Redirect dashboard stdout to stderr to protect MCP protocol
-            if (dashboard.stdout) {
-                dashboard.stdout.on('data', (data) => {
-                    process.stderr.write(`[Dashboard] ${data}`);
-                });
-            }
-            if (dashboard.stderr) {
-                dashboard.stderr.on('data', (data) => {
-                    process.stderr.write(`[Dashboard Error] ${data}`);
-                });
-            }
-
-            dashboard.on('error', (err) => {
-                process.stderr.write(`[ERROR] Failed to start dashboard: ${err}\n`);
+            // Start listening
+            app.listen(port, () => {
+                process.stderr.write(`[Dashboard] Running at http://localhost:${port} (Shared Memory)\n`);
             });
+
         } catch (err) {
-            process.stderr.write(`[ERROR] Error spawning dashboard: ${err}\n`);
+            process.stderr.write(`[ERROR] Failed to start in-process dashboard: ${err}\n`);
         }
     }
-
-    const server = new MemvexServer();
-    await server.start();
-    // Server stays running on stdio transport
 }
 
 main().catch((error) => {
