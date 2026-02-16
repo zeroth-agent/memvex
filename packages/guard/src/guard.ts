@@ -20,10 +20,10 @@ export class GuardModule {
         let backend: ApprovalBackend;
         if (config.persist !== false) {
             try {
-                const { SqliteApprovalQueue } = await import('./sqlite-approvals.js');
-                backend = new SqliteApprovalQueue();
+                const { SqlJsApprovalQueue } = await import('./sqljs-approvals.js');
+                backend = await SqlJsApprovalQueue.create();
             } catch (error) {
-                process.stderr.write('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory approval queue.\n');
+                process.stderr.write('⚠ SQLite unavailable (sql.js loading failed). Using in-memory approval queue.\n');
                 backend = new InMemoryApprovalQueue();
             }
         } else {

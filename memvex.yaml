@@ -14,7 +14,8 @@ identity:
 
 memory:
   enabled: true
-  storage: in_memory  # Changed from 'sqlite' to avoid build issues. Switch back when better-sqlite3 is compiled.
+  storage: sqlite
+  path: ./data/memvex.db  # Changed from 'sqlite' to avoid build issues. Switch back when better-sqlite3 is compiled.
 
 guard:
   enabled: true

@@ -11,10 +11,11 @@ export class MemoryModule {
     static async create(config?: { storage?: string; path?: string }): Promise<MemoryModule> {
         if (config?.storage === 'sqlite') {
             try {
-                const { SqliteStore } = await import('./sqlite-store.js');
-                return new MemoryModule(new SqliteStore(config.path));
+                const { SqlJsStore } = await import('./sqljs-store.js');
+                return new MemoryModule(await SqlJsStore.create(config.path));
             } catch (error) {
-                process.stderr.write('⚠ SQLite unavailable (better-sqlite3 missing). Using in-memory storage.\n');
+                process.stderr.write(`⚠ SQLite unavailable (sql.js loading failed). Using in-memory storage.\n`);
+                process.stderr.write(`  Error details: ${error}\n`);
                 return new MemoryModule(new InMemoryStore());
             }
         }

@@ -123,14 +123,15 @@ export async function createDashboardServer(
     return { app, port };
 }
 
-// Auto-start if run directly
-import { fileURLToPath as _fileURLToPath } from 'url';
-const _isMainModule = process.argv[1] === _fileURLToPath(import.meta.url);
-
-if (_isMainModule) {
-    createDashboardServer().then(({ app, port }) => {
-        app.listen(port, () => {
-            console.log(`Dashboard running at http://localhost:${port}`);
-        });
-    }).catch(err => console.error(err));
-}
+// Auto-start disabled - dashboard is now started explicitly by start.ts or standalone via `pnpm dev`
+// If you want standalone mode, run: npx tsx packages/dashboard/server/api.ts
+// import { fileURLToPath as _fileURLToPath } from 'url';
+// const _isMainModule = process.argv[1] === _fileURLToPath(import.meta.url);
+//
+// if (_isMainModule) {
+//     createDashboardServer().then(({ app, port }) => {
+//         app.listen(port, () => {
+//             console.log(`Dashboard running at http://localhost:${port}`);
+//         });
+//     }).catch(err => console.error(err));
+// }
