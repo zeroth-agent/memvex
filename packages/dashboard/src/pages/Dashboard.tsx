@@ -115,7 +115,7 @@ export default function Dashboard() {
                                 <div key={mem.id} className="glass-card py-3 px-4 flex justify-between">
                                     <div className="truncate text-sm text-text pr-4">{mem.content}</div>
                                     <div className="text-xs text-textMuted font-mono whitespace-nowrap">
-                                        {new Date(mem.timestamp).toLocaleTimeString()}
+                                        {new Date(mem.createdAt).toLocaleTimeString()}
                                     </div>
                                 </div>
                             ))}

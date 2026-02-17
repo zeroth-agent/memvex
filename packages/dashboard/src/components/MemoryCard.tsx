@@ -15,7 +15,7 @@ export function MemoryCard({ memory, onDelete }: MemoryCardProps) {
                     </span>
                     <span className="flex items-center gap-1">
                         <Calendar size={12} />
-                        {new Date(memory.timestamp || Date.now()).toLocaleDateString()}
+                        {new Date(memory.createdAt || Date.now()).toLocaleDateString()}
                     </span>
                 </div>
                 <button

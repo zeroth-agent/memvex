@@ -19,7 +19,7 @@ export async function createDashboardServer(
         identity: IdentityModule;
         config: any
     }
-) {
+): Promise<{ app: express.Application; port: number }> {
     const app = express();
     const port = 3001;
 
