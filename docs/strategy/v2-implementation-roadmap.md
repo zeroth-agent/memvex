@@ -1,139 +1,153 @@
-# Memvex V2 Implementation Roadmap
+# Memvex V2 Implementation Roadmap (Revised)
 
-> Phased plan to implement all 10 solutions from the [competitive analysis](./competitive-analysis.md).
-> Each phase builds on the previous one. Ship each phase as a usable release before starting the next.
-
----
-
-## Overview
-
-| Phase | Name | Focus | Effort | Competitive Analysis Solutions |
-|-------|------|-------|--------|-------------------------------|
-| **1** | Zero-Config Foundation | `npx memvex init`, auto-discovery, JSONC config | 1 week | #2, #9 |
-| **2** | Enforceable Guardrails | MCP elicitation, proxy pattern, audit logging | 1-2 weeks | #1, #4 |
-| **3** | Semantic Search | Transformers.js embeddings, sqlite-vec | 1 week | #8 |
-| **4** | CLI-First UX | Comprehensive CLI, lightweight Hono dashboard | 1 week | #10 |
-| **5** | OSS Infrastructure | CI/CD, semantic-release, GitHub automation | 3-4 days | #6 |
-| **6** | Cross-Device Sync | Turso/libSQL integration | 1 week | #5 |
-| **7** | Positioning & Messaging | README rewrite, landing page, "AI Agent Safety" | 3-4 days | #1, #3, #7 |
-
-**Total estimated effort**: 6-8 weeks
+> Phased plan implementing all 10 competitive analysis solutions **plus** 8 critical gaps identified during self-review.
+> Each phase ships as a usable release. Ordered by **unique value delivered**, not ease.
 
 ---
 
-## Phase 1: Zero-Config Foundation (Solutions #2, #9)
+## Self-Review: What the Original Plan Was Missing
 
-> **Goal**: `npx memvex init` delivers value in under 2 minutes. No config file required.
+| # | Gap | Why It Matters |
+|---|-----|---------------|
+| 1 | **Identity is passive** — stored but never injected into AI conversations | Users get zero value from identity until the AI actually *uses* their preferences. The identity module is a read-only JSON blob. |
+| 2 | **No MCP Resources** — only using MCP Tools, ignoring the Resources capability | MCP Resources let the AI automatically read user preferences without being asked. This is the "magic moment" — Claude just *knows* you. |
+| 3 | **No memory types or importance scoring** — all memories are equal | "My API runs on port 3001" vs "I had coffee today" shouldn't have equal weight. Memory decay and typing (fact / preference / instruction / context) are essential. |
+| 4 | **No encryption at rest** — memories stored as plaintext | Users won't store sensitive info in a tool with zero security. Optional encryption is a trust signal. |
+| 5 | **No multi-agent memory isolation** — Mem0's known bug (#3998) | Memory bleeding between agents is a real problem. Memvex should solve this with strict agent-scoped namespaces. |
+| 6 | **No Python SDK** — AI agent ecosystem is 80% Python | LangChain, CrewAI, AutoGen, Agno are all Python. Without a Python SDK, memvex only reaches the MCP/TypeScript niche. |
+| 7 | **No Docker self-hosting** — "local-first" only works on dev machines | Docker is table stakes for self-hosted tools. One `docker run` command should spin up memvex with dashboard. |
+| 8 | **No approval notifications** — pending approvals sit in a void | When a guardrail blocks something, there's no way to notify the user unless they're staring at the dashboard. Slack/webhook notifications are essential. |
 
-### 1.1 — `memvex init` CLI command
+---
 
-Create an interactive init command that auto-detects the user's environment:
+## Revised Overview
+
+| Phase | Name | Unique Value | Effort | Solutions Addressed |
+|-------|------|-------------|--------|-------------------|
+| **1** | Magic First Run | `npx memvex init` → value in 2 min | 1 week | CA #2, #9 + Gap #1, #2 |
+| **2** | Enforceable Guard | Guardrails that actually block + notifications | 2 weeks | CA #1, #4 + Gap #8 |
+| **3** | Intelligent Memory | Semantic search + memory types + importance | 1.5 weeks | CA #8 + Gap #3, #5 |
+| **4** | Developer Experience | Full CLI + lightweight dashboard + encryption | 1 week | CA #10 + Gap #4 |
+| **5** | Multi-Platform SDK | Python SDK + Docker + REST API | 1.5 weeks | Gap #6, #7 + CA #3 |
+| **6** | OSS Infrastructure | CI/CD, automation, community | 3-4 days | CA #6 |
+| **7** | Cross-Device Sync | Turso/libSQL + cloud sync | 1 week | CA #5 |
+| **8** | Positioning & Launch | README, landing page, comparison | 3-4 days | CA #1, #3, #7 |
+
+**Total: ~8-10 weeks**
+
+---
+
+## Phase 1: Magic First Run (CA #2, #9 + Gaps #1, #2)
+
+> **Goal**: Install → "wow, Claude already knows me" in under 2 minutes.
+> This is the make-or-break moment. If this isn't magical, nothing else matters.
+
+### 1.1 — `memvex init` with Auto-Discovery
 
 ```bash
 $ npx memvex init
-> Welcome to memvex! Scanning your environment...
-> ✓ Found name: Basil (from ~/.gitconfig)
-> ✓ Found language: TypeScript (from package.json)
-> ✓ Found editor: VS Code (from $VISUAL)
-> ✓ Found style: 2-space indent (from .editorconfig)
-> ✓ Found AI prefs: imported from .cursorrules
-> Created 7 seed memories. memvex is ready!
+> Scanning your environment...
+> ✓ Found: Basil Hashil (from ~/.gitconfig)
+> ✓ Stack: TypeScript, React, Vite (from package.json)
+> ✓ Editor: VS Code (from $VISUAL)
+> ✓ Style: 2-space indent (from .editorconfig)
+> ✓ AI prefs: imported 12 rules from .cursorrules
+> ✓ Created 9 seed memories
+> ✓ Generated memvex.jsonc
+>
+> Add to Claude Desktop config:
+> { "mcpServers": { "memvex": { "command": "npx", "args": ["memvex"] } } }
 ```
 
-**Files to create/modify:**
+**New files:**
 
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/cli/src/commands/init.ts` | NEW | Auto-discovery logic + interactive prompts |
-| `packages/core/src/discovery.ts` | NEW | Environment scanner (git, package.json, editor, etc.) |
-| `packages/core/src/config-loader.ts` | MODIFY | Support JSONC + zero-config defaults |
-| `packages/core/src/types.ts` | MODIFY | Add JSONC config schema types |
+| File | Description |
+|------|-------------|
+| `packages/core/src/discovery.ts` | Environment scanner: git, package.json, editor, shell, AI configs |
+| `packages/cli/src/commands/init.ts` | Interactive init with auto-detection |
+| `packages/core/src/schema.json` | JSON Schema for `memvex.jsonc` |
+| `packages/core/src/config-loader.ts` | MODIFY — JSONC + zero-config fallback chain |
 
-**Auto-detection sources (priority order):**
+### 1.2 — MCP Resources for Automatic Context Injection
 
-1. `~/.gitconfig` → name, email
-2. `$EDITOR` / `$VISUAL` → editor preference
-3. `$SHELL` → shell preference
-4. `package.json` → language, frameworks, tools
-5. `.editorconfig` → indent style, line endings
-6. `.cursorrules` / `CLAUDE.md` / `AGENTS.md` → AI preferences
-7. `.env` → environment variables (keys only, not values)
+**This is the killer feature.** Instead of the AI needing to call `identity_get`, expose identity as an MCP **Resource** that Claude reads automatically:
 
-### 1.2 — JSONC config with JSON Schema
+```typescript
+// server.ts — register identity as MCP Resource
+server.resource(
+  "user-identity",
+  "memvex://identity",
+  async (uri) => ({
+    contents: [{
+      uri: uri.href,
+      mimeType: "application/json",
+      text: JSON.stringify(identityModule.getAll())
+    }]
+  })
+);
 
-Replace `memvex.yaml` with optional `memvex.jsonc`:
-
-```jsonc
-// memvex.jsonc — only override what you need
-{
-  "$schema": "https://memvex.dev/schema.json",
-  "identity": {
-    "name": "Basil",           // auto-detected from git
-    "role": "Founder"
-  },
-  "guardrails": {
-    "never": ["rm -rf /", "force push to main"],
-    "always": ["run tests before committing"]
-  }
-}
+// Also expose recent memories as context
+server.resource(
+  "recent-context",
+  "memvex://context/recent",
+  async (uri) => ({
+    contents: [{
+      uri: uri.href,
+      mimeType: "text/plain",
+      text: formatRecentMemories(await memoryModule.list())
+    }]
+  })
+);
 ```
 
-**Progressive disclosure levels:**
+**Result**: Claude automatically reads your identity and recent memories at the start of every conversation. No tool calls needed. The AI just *knows* you.
 
-| Level | Config | What it does |
-|-------|--------|-------------|
+**Modified files:**
+
+| File | Description |
+|------|-------------|
+| `packages/mcp-server/src/server.ts` | MODIFY — register Resources for identity + recent context |
+| `packages/core/src/types.ts` | MODIFY — add config schema types |
+
+### 1.3 — JSONC Config with Progressive Disclosure
+
+| Level | Config | Use case |
+|-------|--------|----------|
 | 0 | None | Auto-detected defaults (works out of the box) |
-| 1 | Env vars | `MEMVEX_OPENAI_KEY` for optional embeddings API |
-| 2 | `memvex.jsonc` | Simple overrides with IDE autocomplete via `$schema` |
-| 3 | `memvex.config.ts` | Full TypeScript config with `defineConfig()` |
-
-**Files to create/modify:**
-
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/core/src/schema.json` | NEW | JSON Schema for `memvex.jsonc` |
-| `packages/core/src/config-loader.ts` | MODIFY | JSONC parser, fallback chain: `.ts` → `.jsonc` → `.yaml` → auto-detect |
-| `packages/core/src/define-config.ts` | NEW | `defineConfig()` helper for TS config |
-
-### 1.3 — Pre-seed memories on first run
-
-After `memvex init`, automatically create seed memories from discovered context so the tool is never empty.
+| 1 | `memvex.jsonc` | Simple overrides with `$schema` IDE autocomplete |
+| 2 | `memvex.config.ts` | `defineConfig()` for power users |
 
 ---
 
-## Phase 2: Enforceable Guardrails (Solutions #1, #4)
+## Phase 2: Enforceable Guard (CA #1, #4 + Gap #8)
 
-> **Goal**: Guardrails that actually block, not just advise. This is the core differentiator from Mem0.
+> **Goal**: Guardrails that actually block + notify you when something is waiting.
 
-### 2.1 — MCP Elicitation Support
-
-Use MCP's elicitation mechanism to pause tool execution and require human approval:
+### 2.1 — MCP Elicitation (Real Enforcement)
 
 ```typescript
-// In guard tool handler
+// guard tool handler
 const violation = guardModule.check(action, params);
 if (violation.requiresApproval) {
-  const result = await server.elicit(
-    `⚠️ Guardrail: ${violation.reason}. Override?`,
-    { type: "confirmation" }
-  );
-  if (result.action !== "accept") {
+  // Actually PAUSE execution — user must approve in-client
+  const response = await server.requestElicitation({
+    message: `⚠️ ${violation.reason}`,
+    requestedSchema: {
+      type: "object",
+      properties: {
+        override: { type: "boolean", description: "Allow this action?" }
+      }
+    }
+  });
+  if (response.action !== "accept" || !response.content?.override) {
     return { blocked: true, reason: violation.reason };
   }
 }
 ```
 
-**Files to create/modify:**
+### 2.2 — MCP Proxy (`memvex-proxy`)
 
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/mcp-server/src/server.ts` | MODIFY | Add elicitation calls in guard tool handlers |
-| `packages/guard/src/guard.ts` | MODIFY | Return structured violation objects with severity |
-| `packages/core/src/types.ts` | MODIFY | Add `GuardViolation` type with severity levels |
-
-### 2.2 — MCP Proxy/Gateway Pattern
-
-Create `memvex-proxy` that wraps any MCP server with guardrails:
+Wrap *any* MCP server with guardrails — zero code changes:
 
 ```json
 {
@@ -146,317 +160,251 @@ Create `memvex-proxy` that wraps any MCP server with guardrails:
 }
 ```
 
-**Files to create:**
+**New package:**
 
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/proxy/` | NEW | Entire new package for MCP proxy |
-| `packages/proxy/src/proxy.ts` | NEW | MCP stdio proxy that intercepts tool calls |
-| `packages/proxy/src/interceptor.ts` | NEW | Rule evaluation engine for intercepted calls |
-| `packages/proxy/bin/memvex-proxy.ts` | NEW | CLI entry point |
+| File | Description |
+|------|-------------|
+| `packages/proxy/src/proxy.ts` | stdio MCP proxy, intercepts tool calls |
+| `packages/proxy/src/interceptor.ts` | Rule evaluation on intercepted calls |
+| `packages/proxy/src/policy.ts` | Policy-as-code engine (JSON rule definitions) |
+| `packages/proxy/bin/memvex-proxy.ts` | CLI entry point |
 
-### 2.3 — Audit Logging
+### 2.3 — Approval Notifications
 
-Log every guardrail evaluation for compliance and debugging:
+When a guardrail blocks something, notify the user:
 
-```typescript
-interface AuditEntry {
-  timestamp: string;
-  action: string;
-  agent?: string;
-  decision: 'allowed' | 'blocked' | 'approval_required' | 'overridden';
-  rule: string;
-  params?: Record<string, unknown>;
+```jsonc
+// memvex.jsonc
+{
+  "notifications": {
+    "webhook": "https://hooks.slack.com/services/...",  // Slack
+    "desktop": true   // Native OS notification
+  }
 }
 ```
 
-**Files to create/modify:**
-
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/guard/src/audit.ts` | NEW | Audit log backend (SQLite table) |
-| `packages/guard/src/guard.ts` | MODIFY | Emit audit entries on every check |
+| File | Description |
+|------|-------------|
+| `packages/guard/src/notifier.ts` | NEW — webhook + desktop notification sender |
+| `packages/guard/src/audit.ts` | NEW — SQLite audit log for all guard evaluations |
 
 ---
 
-## Phase 3: Semantic Search (Solution #8)
+## Phase 3: Intelligent Memory (CA #8 + Gaps #3, #5)
 
-> **Goal**: Replace `LIKE` queries with real vector search. Zero API keys. Fully offline.
+> **Goal**: Not just storage — smart memory with types, importance, semantic search, and agent isolation.
 
-### 3.1 — Transformers.js Embedding Pipeline
+### 3.1 — Memory Types and Importance
+
+```typescript
+interface MemoryEntry {
+  id: string;
+  content: string;
+  type: 'fact' | 'preference' | 'instruction' | 'context' | 'episode';
+  importance: number;       // 0.0 - 1.0, auto-scored or user-set
+  agent?: string;           // Which agent stored this
+  namespace?: string;
+  tags?: string[];
+  accessCount: number;      // How often recalled
+  lastAccessedAt?: string;  // For decay calculation
+  createdAt: string;
+  expiresAt?: string;
+}
+```
+
+**Memory decay**: Memories that are never recalled gradually lose importance. Frequently accessed memories gain importance. This is how real human memory works.
+
+**Auto-classification**: When an agent stores "always use TypeScript", classify it as `instruction` with high importance. When it stores "we discussed the API today", classify as `episode` with lower importance.
+
+### 3.2 — Agent-Scoped Memory Isolation
+
+Solve Mem0's memory bleeding bug (#3998):
+
+```typescript
+// Each agent has its own namespace by default
+memory_store({ content: "...", agent: "coding-agent" })
+// Only visible to coding-agent unless explicitly shared
+
+memory_recall({ query: "...", agent: "coding-agent" })
+// Only searches coding-agent's memories
+
+memory_recall({ query: "...", shared: true })
+// Searches across all agents (explicit opt-in)
+```
+
+### 3.3 — Semantic Search (Transformers.js + sqlite-vec)
 
 ```typescript
 import { pipeline } from '@huggingface/transformers';
 
-const extractor = await pipeline('feature-extraction',
+const embedder = await pipeline('feature-extraction',
   'Xenova/all-MiniLM-L6-v2', { dtype: 'q8' });
-
-async function embed(text: string): Promise<Float32Array> {
-  const output = await extractor(text, { pooling: 'mean', normalize: true });
-  return new Float32Array(output.data);
-}
 ```
 
-**Model**: `all-MiniLM-L6-v2` — 384 dimensions, ~80MB, 10-50ms/query on CPU.
+**Hybrid search**: Combine keyword `LIKE` matching (fast, exact) with vector similarity (semantic, fuzzy) for best results.
 
-### 3.2 — sqlite-vec Vector Storage
-
-Add vector search to the existing SQLite database:
-
-```sql
-CREATE VIRTUAL TABLE IF NOT EXISTS vec_memories
-  USING vec0(embedding float[384]);
-```
-
-### 3.3 — Hybrid Search (Text + Vector)
-
-Combine keyword matching with semantic similarity for best results.
-
-**Files to create/modify:**
-
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/memory/src/embeddings.ts` | NEW | Transformers.js wrapper, lazy model loading |
-| `packages/memory/src/vector-store.ts` | NEW | sqlite-vec integration |
-| `packages/memory/src/hybrid-search.ts` | NEW | Combined text + vector ranking |
-| `packages/memory/src/memory.ts` | MODIFY | Use hybrid search in `recall()` |
-| `packages/memory/src/sqljs-store.ts` | MODIFY | Add embedding column to schema |
-
-**Dependencies to add:**
-
-```bash
-pnpm add @huggingface/transformers sqlite-vec
-```
+| File | Description |
+|------|-------------|
+| `packages/memory/src/embeddings.ts` | NEW — Transformers.js wrapper, lazy loading |
+| `packages/memory/src/vector-store.ts` | NEW — sqlite-vec integration |
+| `packages/memory/src/types.ts` | MODIFY — add `type`, `importance`, `accessCount` |
+| `packages/memory/src/decay.ts` | NEW — importance decay algorithm |
+| `packages/memory/src/classifier.ts` | NEW — auto-classify memory type |
 
 ---
 
-## Phase 4: CLI-First UX (Solution #10)
+## Phase 4: Developer Experience (CA #10 + Gap #4)
 
-> **Goal**: Comprehensive CLI that proves the tool's value before any dashboard.
+> **Goal**: CLI-first, lightweight dashboard, optional encryption.
 
-### 4.1 — Expanded CLI Commands
+### 4.1 — Comprehensive CLI
 
 ```bash
 # Memory
-memvex memories list [--namespace ns] [--limit 20]
+memvex memories list [--namespace ns] [--type fact] [--limit 20]
 memvex memories search "what port does our API use?"
-memvex memories add "Our API runs on port 3001" --namespace work
+memvex memories add "API runs on port 3001" --type fact --namespace work
 memvex memories delete <id>
-memvex memories export --format json > backup.json
+memvex memories export > backup.json
 memvex memories import < backup.json
 
 # Guard
-memvex guard rules                    # Show configured guardrails
-memvex guard check "deploy to prod"   # Test a rule
-memvex guard pending                  # List pending approvals
-memvex guard approve <id>
-memvex guard deny <id>
-memvex guard audit [--last 50]        # View audit log
+memvex guard rules
+memvex guard check "deploy to prod"
+memvex guard pending / approve <id> / deny <id>
+memvex guard audit [--last 50]
 
 # Identity
-memvex identity show                  # Display current identity
-memvex identity set name "Basil"      # Update a field
+memvex identity show / set name "Basil"
 
 # System
-memvex status                         # All modules status
-memvex doctor                         # Diagnose issues
-memvex config show                    # Resolved config
-memvex config edit                    # Open config in $EDITOR
+memvex status / doctor / config show / config edit
 ```
 
-### 4.2 — Lightweight Hono Dashboard (V1.1)
+### 4.2 — Lightweight Hono Dashboard
 
-Replace the current React SPA + Express dashboard with a single-file Hono server:
+Replace React SPA with ~700 lines of Hono + embedded HTML. No build step.
 
-```typescript
-import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
+### 4.3 — Encryption at Rest
 
-const app = new Hono();
-app.get('/', (c) => c.html(DASHBOARD_HTML));        // Single embedded HTML
-app.get('/api/memories', async (c) => c.json(await db.getMemories()));
-app.get('/api/guardrails', async (c) => c.json(await db.getGuardrails()));
-
-export const startDashboard = (port = 4983) => serve({ fetch: app.fetch, port });
+```jsonc
+{
+  "security": {
+    "encryption": true,
+    "keySource": "env:MEMVEX_KEY"  // or "keychain" for OS keychain
+  }
+}
 ```
 
-**Target**: ~700 lines total. No build step. No React. No Vite.
-
-**Files to create/modify:**
-
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/cli/src/commands/memories.ts` | NEW | Full memory CLI |
-| `packages/cli/src/commands/guard.ts` | MODIFY | Add `rules`, `audit`, expand commands |
-| `packages/cli/src/commands/identity.ts` | NEW | Identity CLI |
-| `packages/cli/src/commands/status.ts` | NEW | System status |
-| `packages/cli/src/commands/doctor.ts` | NEW | Diagnostic tool |
-| `packages/dashboard/` | REWRITE | Replace React SPA with Hono single-file |
+| File | Description |
+|------|-------------|
+| `packages/core/src/encryption.ts` | NEW — AES-256-GCM encrypt/decrypt |
+| `packages/memory/src/encrypted-store.ts` | NEW — wraps any store with encryption |
 
 ---
 
-## Phase 5: OSS Infrastructure (Solution #6)
+## Phase 5: Multi-Platform SDK (Gaps #6, #7 + CA #3)
 
-> **Goal**: Automate everything so a solo maintainer can scale.
+> **Goal**: Reach the Python/Docker audience. Not MCP-only.
 
-### 5.1 — CI/CD Pipeline
-
-| Tool | Purpose |
-|------|---------|
-| **GitHub Actions** | Build, test, lint on every PR |
-| **semantic-release** | Auto-version, changelog, npm publish on merge |
-| **Renovate** | Auto-update deps, auto-merge patch versions |
-| **actions/stale** | Close stale issues after 30 days |
-
-### 5.2 — Community Infrastructure
-
-| Asset | Purpose |
-|-------|---------|
-| `CONTRIBUTING.md` | Contribution guidelines, time commitment expectations |
-| `.github/ISSUE_TEMPLATE/` | Bug report + feature request templates |
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist |
-| `SECURITY.md` | Vulnerability reporting process |
-| GitHub Discussions | Replace Discord — async, searchable, zero moderation |
-| GitHub Sponsors | $5/individual, $25/team, $100/company |
-
-### 5.3 — README Rewrite
-
-Restructure README for the "AI Agent Safety Memory" positioning:
-
-```markdown
-# memvex
-
-Memory, identity, and guardrails for AI agents.
-Self-hosted. Private. Zero API keys.
-
-## Quick Start (2 minutes)
-npx memvex init
-
-## What it does
-- 🧠 **Memory** — Persistent, semantic search across all your AI conversations
-- 🛡️ **Guard** — Enforceable action boundaries that actually block (not just advise)
-- 👤 **Identity** — Auto-discovered preferences injected into every AI interaction
-```
-
-**Files to create:**
-
-| File | Action |
-|------|--------|
-| `.github/workflows/ci.yml` | NEW |
-| `.github/workflows/release.yml` | NEW |
-| `.github/ISSUE_TEMPLATE/bug.yml` | NEW |
-| `.github/ISSUE_TEMPLATE/feature.yml` | NEW |
-| `.github/PULL_REQUEST_TEMPLATE.md` | NEW |
-| `CONTRIBUTING.md` | NEW |
-| `SECURITY.md` | NEW |
-| `renovate.json` | NEW |
-
----
-
-## Phase 6: Cross-Device Sync (Solution #5)
-
-> **Goal**: Memories and guardrails sync across devices via Turso.
-
-### 6.1 — Turso/libSQL Integration
-
-Replace `sql.js` / `better-sqlite3` with `@tursodatabase/sync`:
+### 5.1 — REST API Layer
 
 ```typescript
-import { connect } from "@tursodatabase/sync";
-
-const db = await connect({
-  path: "~/.memvex/memvex.db",           // Local SQLite file
-  url: "libsql://memvex-user.turso.io",  // Optional cloud sync
-  authToken: process.env.MEMVEX_TURSO_TOKEN,
-});
-
-// Sync on demand
-await db.push();  // Local → Cloud
-await db.pull();  // Cloud → Local
+// packages/server/src/rest.ts
+app.post('/v1/memory', async (req, res) => { /* ... */ });
+app.post('/v1/guard/check', async (req, res) => { /* ... */ });
+app.get('/v1/identity', (req, res) => { /* ... */ });
 ```
 
-**Key benefit**: libSQL has **native vector search**, so sqlite-vec dependency is eliminated.
+### 5.2 — Python SDK
 
-### 6.2 — Sync CLI Commands
+```python
+from memvex import Memvex
+
+mx = Memvex(url="http://localhost:4983")
+
+# Memory
+mx.memory.store("API runs on port 3001", namespace="work")
+results = mx.memory.recall("what port?")
+
+# Guard
+decision = mx.guard.check("deploy_to_prod")
+if decision.blocked:
+    print(f"Blocked: {decision.reason}")
+
+# Identity
+prefs = mx.identity.get("coding.style")
+```
+
+### 5.3 — Docker Self-Hosting
 
 ```bash
-memvex sync push              # Push local changes to cloud
-memvex sync pull              # Pull cloud changes locally
-memvex sync status            # Show sync state
-memvex sync setup             # Configure Turso credentials
+docker run -d -p 4983:4983 -v ~/.memvex:/data zerothagent/memvex
 ```
 
-**Files to create/modify:**
-
-| File | Action | Description |
-|------|--------|-------------|
-| `packages/memory/src/turso-store.ts` | NEW | Turso-backed memory store |
-| `packages/guard/src/turso-approvals.ts` | NEW | Turso-backed approval queue |
-| `packages/cli/src/commands/sync.ts` | NEW | Sync CLI commands |
-| `packages/core/src/types.ts` | MODIFY | Add sync config types |
+| File | Description |
+|------|-------------|
+| `packages/sdk-python/` | NEW — Python SDK package |
+| `packages/server/src/rest.ts` | NEW — REST API alongside MCP |
+| `Dockerfile` | NEW — Multi-stage build |
+| `docker-compose.yml` | NEW — With optional Turso sync |
 
 ---
 
-## Phase 7: Positioning & Messaging (Solutions #1, #3, #7)
+## Phase 6: OSS Infrastructure (CA #6)
 
-> **Goal**: Reposition memvex as "AI Agent Safety Memory" — the category Mem0 doesn't touch.
+> **Goal**: Automate everything so solo maintainer can scale.
 
-### 7.1 — Messaging Framework
-
-| Audience | Message |
-|----------|---------|
-| **Tagline** | "Memory, identity, and guardrails for AI agents" |
-| **Developer** | "The MCP server that gives your AI agents persistent memory, user preferences, and action boundaries — no cloud, no telemetry, no API keys." |
-| **Enterprise** | "Designed for environments where data sovereignty matters. Self-hosted by default." |
-
-### 7.2 — Landing Page Refresh
-
-Update the existing landing page with:
-- New tagline and positioning
-- Interactive demo showing guardrails in action
-- Comparison table (memvex vs Mem0 vs NeMo Guardrails)
-- "2-minute quickstart" video/GIF
-
-### 7.3 — Archive "Enterprise" Language
-
-Replace any enterprise-targeting copy with:
-> "Building for regulated industries? Memvex is designed from the ground up for environments where data sovereignty matters. Self-hosted by default. Apache 2.0 licensed."
+| Asset | File |
+|-------|------|
+| CI/CD | `.github/workflows/ci.yml`, `.github/workflows/release.yml` |
+| semantic-release | Auto-version + changelog + npm publish |
+| Renovate | `renovate.json` — auto-update deps |
+| Stale bot | 30-day timeout on issues |
+| Community | `CONTRIBUTING.md`, `SECURITY.md`, issue/PR templates |
+| Funding | GitHub Sponsors ($5/$25/$100 tiers) |
 
 ---
 
-## Implementation Priority
+## Phase 7: Cross-Device Sync (CA #5)
 
-```mermaid
-gantt
-    title Memvex V2 Roadmap
-    dateFormat YYYY-MM-DD
-    
-    section Phase 1: Zero-Config
-    memvex init + auto-discovery     :p1a, 2026-02-18, 4d
-    JSONC config + schema            :p1b, after p1a, 3d
-    
-    section Phase 2: Guardrails
-    MCP elicitation support          :p2a, after p1b, 4d
-    Proxy/gateway pattern            :p2b, after p2a, 5d
-    Audit logging                    :p2c, after p2a, 3d
-    
-    section Phase 3: Semantic Search
-    Transformers.js embeddings       :p3a, after p2b, 3d
-    sqlite-vec + hybrid search       :p3b, after p3a, 4d
-    
-    section Phase 4: CLI-First UX
-    Expanded CLI commands            :p4a, after p3b, 4d
-    Hono dashboard rewrite           :p4b, after p4a, 3d
-    
-    section Phase 5: OSS Infra
-    CI/CD + automation               :p5, after p4b, 4d
-    
-    section Phase 6: Sync
-    Turso integration                :p6, after p5, 5d
-    
-    section Phase 7: Messaging
-    README + landing page            :p7, after p6, 3d
+> **Goal**: Turso/libSQL for cross-device memory + guardrails.
+
+Swap `sql.js`/`better-sqlite3` with `@tursodatabase/sync`. Same data model, different driver. libSQL's native vector search replaces sqlite-vec.
+
+```bash
+memvex sync setup    # Configure Turso
+memvex sync push     # Local → Cloud
+memvex sync pull     # Cloud → Local
 ```
+
+---
+
+## Phase 8: Positioning & Launch (CA #1, #3, #7)
+
+> **Goal**: "AI Agent Safety Memory" — the category Mem0 doesn't own.
+
+| Deliverable | Description |
+|------------|-------------|
+| README rewrite | "Memory, identity, and guardrails — no cloud, no API keys" |
+| Landing page | Interactive guardrails demo, comparison table |
+| `npx memvex` | One-command setup, value in 2 min |
+| Launch post | HN, Reddit, Twitter — lead with guardrails story |
+
+---
+
+## What Makes This Unique (vs Original Plan)
+
+| Original Plan | Revised Plan | Why It Matters |
+|--------------|-------------|---------------|
+| Identity is read-only JSON | Identity auto-injected via MCP Resources | AI *knows* you without asking |
+| All memories equal | Typed memories with importance + decay | Smart memory, not dumb storage |
+| Basic keyword search | Hybrid semantic + keyword search | Actually finds what you need |
+| Guardrails are advisory | Elicitation + proxy = real enforcement | "Block" means blocked |
+| TypeScript/MCP only | Python SDK + REST API + Docker | 10x larger audience |
+| No encryption | Optional AES-256-GCM at rest | Trust signal for sensitive data |
+| No notifications | Slack/webhook/desktop notifications | Approvals don't sit in a void |
+| No agent isolation | Agent-scoped namespaces | Solves Mem0's memory bleeding |
 
 ---
 
@@ -464,10 +412,12 @@ gantt
 
 | Metric | Target |
 |--------|--------|
-| Time from `npm install` to "wow" | < 2 minutes |
-| Config file required | No (zero-config by default) |
-| External API keys required | No (local Transformers.js) |
-| Guardrails actually enforce | Yes (MCP elicitation + proxy) |
-| Cross-device sync | Yes (Turso, optional) |
-| Solo-maintainer sustainable | Yes (full CI/CD automation) |
-| Clear Mem0 differentiation | "Memory + Identity + Guardrails" |
+| Time from install to "wow" | < 2 minutes |
+| Config file required | No |
+| External API keys required | No |
+| Guardrails enforce | Yes (elicitation + proxy) |
+| Memory quality | Semantic search, typed, decay |
+| Platform reach | MCP + REST + Python |
+| Self-hostable | One `docker run` command |
+| Solo-maintainer sustainable | Full CI/CD automation |
+| Clear Mem0 differentiation | Memory + Identity + Guard |
